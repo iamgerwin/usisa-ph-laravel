@@ -13,28 +13,59 @@ class DimeScraperStrategy extends BaseScraperStrategy
      */
     public function processData(array $rawData): array
     {
-        $mapped = $this->mapFields($rawData);
+        // Handle nested structure from Next.js response
+        $project = $rawData['pageProps']['project'] ?? $rawData;
+        
+        // Process implementing offices, contractors, and source of funds
+        $implementingOffices = $this->processImplementingOffices($project['implementingOffices'] ?? []);
+        $contractors = $this->processContractors($project['contractors'] ?? []);
+        $sourceOfFunds = $this->processSourceOfFunds($project['sourceOfFunds'] ?? []);
+        $program = $this->processProgram($project['program'] ?? null);
         
         return [
-            'source_id' => $rawData['id'] ?? null,
-            'source_type' => 'dime',
-            'title' => $this->cleanText($mapped['title'] ?? $rawData['project_name'] ?? ''),
-            'description' => $this->cleanText($mapped['description'] ?? $rawData['project_description'] ?? ''),
-            'status' => $this->mapStatus($mapped['status'] ?? $rawData['status'] ?? 'active'),
-            'department_id' => $this->resolveDepartmentId($mapped['department'] ?? $rawData['implementing_agency'] ?? null),
-            'category_id' => $this->resolveCategoryId($mapped['category'] ?? $rawData['project_type'] ?? null),
-            'cost' => $this->parseAmount($mapped['cost'] ?? $rawData['approved_budget'] ?? 0),
-            'start_date' => $this->parseDate($mapped['start_date'] ?? $rawData['start_date'] ?? null),
-            'end_date' => $this->parseDate($mapped['end_date'] ?? $rawData['end_date'] ?? null),
-            'location' => $mapped['location'] ?? $rawData['location'] ?? null,
-            'latitude' => $this->parseCoordinate($mapped['latitude'] ?? $rawData['lat'] ?? null),
-            'longitude' => $this->parseCoordinate($mapped['longitude'] ?? $rawData['lng'] ?? null),
-            'contractor' => $mapped['contractor'] ?? $rawData['contractor_name'] ?? null,
-            'contract_amount' => $this->parseAmount($mapped['contract_amount'] ?? $rawData['contract_amount'] ?? null),
-            'progress_percentage' => $this->parsePercentage($mapped['progress'] ?? $rawData['physical_progress'] ?? 0),
-            'beneficiaries_count' => $this->parseInt($mapped['beneficiaries'] ?? $rawData['beneficiaries'] ?? null),
-            'metadata' => $this->buildMetadata($rawData),
-            'scraped_at' => now(),
+            'dime_id' => $project['id'] ?? null,
+            'project_name' => $this->cleanText($project['projectName'] ?? ''),
+            'project_code' => $project['projectCode'] ?? null,
+            'description' => $this->cleanText($project['description'] ?? ''),
+            'project_image_url' => $project['projectImageUrl'] ?? null,
+            'street_address' => $project['streetAddress'] ?? null,
+            'city_name' => $project['city'] ?? null,
+            'city_code' => $project['cityCode'] ?? null,
+            'zip_code' => $project['zipCode'] ?? null,
+            'barangay_name' => $project['barangay'] ?? null,
+            'barangay_code' => $project['barangayCode'] ?? null,
+            'province_name' => $project['province'] ?? null,
+            'province_code' => $project['provinceCode'] ?? null,
+            'region_name' => $project['region'] ?? null,
+            'region_code' => $project['regionCode'] ?? null,
+            'country' => $project['country'] ?? 'Philippines',
+            'state' => $project['state'] ?? null,
+            'latitude' => $this->parseCoordinate($project['latitude'] ?? null),
+            'longitude' => $this->parseCoordinate($project['longitude'] ?? null),
+            'status' => $project['status'] ?? null,
+            'publication_status' => $project['publicationStatus'] ?? 'Published',
+            'cost' => $this->parseAmount($project['cost'] ?? 0),
+            'utilized_amount' => $this->parseAmount($project['utilizedAmount'] ?? 0),
+            'date_started' => $this->parseDate($project['dateStarted'] ?? null),
+            'actual_date_started' => $this->parseDate($project['actualDateStarted'] ?? null),
+            'contract_completion_date' => $this->parseDate($project['contractCompletionDate'] ?? null),
+            'actual_contract_completion_date' => $this->parseDate($project['actualContractCompletionDate'] ?? null),
+            'as_of_date' => $this->parseDate($project['asOfDate'] ?? null),
+            'last_updated_project_cost' => $this->parseDate($project['lastUpdatedProjectCost'] ?? null),
+            'updates_count' => $project['updatesCount'] ?? 0,
+            'program_id' => $program['id'] ?? null,
+            'data_source' => 'dime',
+            'last_synced_at' => now(),
+            'metadata' => $this->buildMetadata($project, [
+                'implementing_offices' => $implementingOffices,
+                'contractors' => $contractors,
+                'source_of_funds' => $sourceOfFunds,
+                'program' => $program,
+                'resources' => $project['resources'] ?? [],
+                'progresses' => $project['progresses'] ?? [],
+                'dime_created_at' => $project['createdAt'] ?? null,
+                'dime_updated_at' => $project['updatedAt'] ?? null,
+            ]),
         ];
     }
 
@@ -43,7 +74,14 @@ class DimeScraperStrategy extends BaseScraperStrategy
      */
     public function validateData(array $data): bool
     {
-        return isset($data['id']) || isset($data['project_name']);
+        // Check for Next.js response structure
+        if (isset($data['pageProps']['project'])) {
+            $project = $data['pageProps']['project'];
+            return isset($project['id']) || isset($project['projectName']);
+        }
+        
+        // Check for direct project data
+        return isset($data['id']) || isset($data['projectName']);
     }
 
     /**
@@ -59,7 +97,7 @@ class DimeScraperStrategy extends BaseScraperStrategy
      */
     public function getUniqueField(): string
     {
-        return 'source_id';
+        return 'dime_id';
     }
 
     /**
@@ -248,9 +286,71 @@ class DimeScraperStrategy extends BaseScraperStrategy
     }
 
     /**
+     * Process implementing offices array
+     */
+    protected function processImplementingOffices(array $offices): array
+    {
+        return array_map(function ($office) {
+            return [
+                'id' => $office['id'] ?? null,
+                'name' => $office['name'] ?? null,
+                'abbreviation' => $office['nameAbbreviation'] ?? null,
+                'logo_url' => $office['logoUrl'] ?? null,
+            ];
+        }, $offices);
+    }
+
+    /**
+     * Process contractors array
+     */
+    protected function processContractors(array $contractors): array
+    {
+        return array_map(function ($contractor) {
+            return [
+                'id' => $contractor['id'] ?? null,
+                'name' => $contractor['name'] ?? null,
+                'abbreviation' => $contractor['nameAbbreviation'] ?? null,
+                'logo_url' => $contractor['logoUrl'] ?? null,
+            ];
+        }, $contractors);
+    }
+
+    /**
+     * Process source of funds array
+     */
+    protected function processSourceOfFunds(array $sources): array
+    {
+        return array_map(function ($source) {
+            return [
+                'id' => $source['id'] ?? null,
+                'name' => $source['name'] ?? null,
+                'abbreviation' => $source['nameAbbreviation'] ?? null,
+                'logo_url' => $source['logoUrl'] ?? null,
+            ];
+        }, $sources);
+    }
+
+    /**
+     * Process program data
+     */
+    protected function processProgram(?array $program): ?array
+    {
+        if (!$program) {
+            return null;
+        }
+        
+        return [
+            'id' => $program['id'] ?? null,
+            'name' => $program['programName'] ?? null,
+            'abbreviation' => $program['nameAbbreviation'] ?? null,
+            'description' => $program['programDescription'] ?? null,
+        ];
+    }
+
+    /**
      * Build metadata array from raw data
      */
-    protected function buildMetadata(array $rawData): array
+    protected function buildMetadata(array $rawData, array $additionalData = []): array
     {
         $metadata = [
             'source' => 'dime',
@@ -258,24 +358,8 @@ class DimeScraperStrategy extends BaseScraperStrategy
             'raw_status' => $rawData['status'] ?? null,
         ];
         
-        $extraFields = [
-            'project_code',
-            'procurement_mode',
-            'fund_source',
-            'project_classification',
-            'remarks',
-            'date_awarded',
-            'notice_to_proceed',
-            'target_completion',
-            'revised_completion',
-            'actual_completion',
-        ];
-        
-        foreach ($extraFields as $field) {
-            if (isset($rawData[$field])) {
-                $metadata[$field] = $rawData[$field];
-            }
-        }
+        // Merge additional data
+        $metadata = array_merge($metadata, $additionalData);
         
         return $metadata;
     }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('code', 20)->unique()->comment('PSGC region code');
             $table->string('name')->comment('Region name');
-            $table->string('abbreviation', 10)->nullable()->comment('Region abbreviation');
+            $table->string('abbreviation', 20)->nullable()->comment('Region abbreviation');
             $table->integer('sort_order')->default(0)->comment('Display sort order');
             $table->boolean('is_active')->default(true);
             $table->timestamps();

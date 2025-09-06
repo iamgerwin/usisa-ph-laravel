@@ -3,15 +3,14 @@
 namespace App\Filament\Resources\ScraperSources\Tables;
 
 use App\Models\ScraperSource;
-use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\BoolColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -31,8 +30,9 @@ class ScraperSourcesTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                BoolColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Active')
+                    ->boolean()
                     ->sortable(),
                 TextColumn::make('base_url')
                     ->limit(30)
@@ -47,11 +47,12 @@ class ScraperSourcesTable
                 TextColumn::make('latestJob.status')
                     ->label('Latest Job')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'completed' => 'success',
                         'running' => 'warning',
                         'failed' => 'danger',
                         'paused' => 'gray',
+                        null => 'gray',
                         default => 'secondary',
                     }),
                 TextColumn::make('created_at')
@@ -68,7 +69,7 @@ class ScraperSourcesTable
                     ]),
                 TrashedFilter::make(),
             ])
-            ->recordActions([
+            ->actions([
                 Action::make('run')
                     ->label('Run Scraper')
                     ->icon('heroicon-o-play')
@@ -87,7 +88,7 @@ class ScraperSourcesTable
                     ->visible(fn (ScraperSource $record): bool => $record->is_active),
                 EditAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),

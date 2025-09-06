@@ -3,19 +3,17 @@
 namespace App\Filament\Resources\ScraperSources\Tables;
 
 use App\Models\ScraperSource;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Artisan;
 
 class ScraperSourcesTable
 {
@@ -69,26 +67,10 @@ class ScraperSourcesTable
                     ]),
                 TrashedFilter::make(),
             ])
-            ->actions([
-                Action::make('run')
-                    ->label('Run Scraper')
-                    ->icon('heroicon-o-play')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Run Scraper')
-                    ->modalDescription('Start a new scraping job for this source?')
-                    ->modalSubmitActionLabel('Start Scraping')
-                    ->action(function (ScraperSource $record) {
-                        Artisan::call('scrape:data', [
-                            '--source' => $record->code,
-                            '--start' => 1,
-                            '--end' => 100,
-                        ]);
-                    })
-                    ->visible(fn (ScraperSource $record): bool => $record->is_active),
+            ->recordActions([
                 EditAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),

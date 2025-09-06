@@ -15,7 +15,7 @@ class StatsOverview extends StatsOverviewWidget
     protected function getStats(): array
     {
         $totalProjects = Project::count();
-        $totalBudget = Project::sum('approved_budget_contract');
+        $totalBudget = Project::sum('cost');
         $activeProjects = Project::where('status', 'active')->count();
         $totalPrograms = Program::count();
         $totalContractors = Contractor::count();

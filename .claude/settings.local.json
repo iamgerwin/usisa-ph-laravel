@@ -4,7 +4,8 @@
       "Bash(php artisan filament:install:*)",
       "Bash(php artisan:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

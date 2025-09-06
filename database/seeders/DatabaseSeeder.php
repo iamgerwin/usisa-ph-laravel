@@ -13,11 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call([
+            RegionSeeder::class,
+            ProgramSeeder::class,
+            ImplementingOfficeSeeder::class,
+            SourceOfFundSeeder::class,
+            ProjectSeeder::class,
+        ]);
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Admin User',
+            'email' => 'admin@usisa.gov.ph',
         ]);
     }
 }

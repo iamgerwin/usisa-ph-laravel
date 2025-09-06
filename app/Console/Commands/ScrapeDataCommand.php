@@ -258,13 +258,21 @@ class ScrapeDataCommand extends Command
                 $uniqueField => $uniqueValue,
             ];
             
-            if (isset($data['source_type'])) {
-                $conditions['source_type'] = $data['source_type'];
+            // For DIME scraper, also check by project_code as secondary unique
+            if ($uniqueField === 'dime_id' && isset($data['project_code'])) {
+                $existing = $modelClass::where($uniqueField, $uniqueValue)
+                    ->orWhere('project_code', $data['project_code'])
+                    ->first();
+            } else {
+                $existing = $modelClass::where($conditions)->first();
             }
             
-            $existing = $modelClass::where($conditions)->first();
-            
             if ($existing) {
+                // Update dime_id if it was matched by project_code
+                if ($uniqueField === 'dime_id' && !$existing->dime_id) {
+                    $data['dime_id'] = $uniqueValue;
+                }
+                
                 $existing->update($data);
                 $this->job->incrementUpdate();
                 

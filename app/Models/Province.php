@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Province extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'region_id',
+        'code',
+        'name',
+        'abbreviation',
+        'sort_order',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
+        'region_id' => 'integer',
+    ];
+
+    // Relationships
+    public function region(): BelongsTo
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function cities(): HasMany
+    {
+        return $this->hasMany(City::class);
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sort_order')->orderBy('name');
+    }
+
+    public function scopeByRegion($query, $regionId)
+    {
+        return $query->where('region_id', $regionId);
+    }
+
+    // Accessors
+    public function getFullNameAttribute(): string
+    {
+        $regionName = $this->region?->name ?? '';
+        return $regionName ? "{$this->name}, {$regionName}" : $this->name;
+    }
+
+    // Helper methods for Filament
+    public function getCitiesCountAttribute(): int
+    {
+        return $this->cities()->count();
+    }
+
+    public function getProjectsCountAttribute(): int
+    {
+        return $this->projects()->count();
+    }
+}

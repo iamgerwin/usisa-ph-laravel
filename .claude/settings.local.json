@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git push:*)"
+      "Bash(php artisan filament:install:*)",
+      "Bash(php artisan:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(composer require:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []

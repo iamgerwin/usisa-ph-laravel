@@ -9,12 +9,13 @@ use App\Filament\Resources\ScraperJobs\Pages\ListScraperJobs;
 use App\Filament\Resources\ScraperJobs\Tables\ScraperJobsTable;
 use App\Models\ScraperJob;
 use BackedEnum;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -30,7 +31,9 @@ class ScraperJobResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Job Configuration')
+                Form::make()
+                    ->schema([
+                        Section::make('Job Configuration')
                     ->description('Configure the scraping job parameters')
                     ->schema([
                         Select::make('source_id')
@@ -150,6 +153,7 @@ class ScraperJobResource extends Resource
                 Hidden::make('completed_at'),
                 Hidden::make('stats'),
                 Hidden::make('errors'),
+                ]),
             ]);
     }
 

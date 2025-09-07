@@ -38,7 +38,7 @@ class Contractor extends Model
      */
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class, 'project_contractors')
+        return $this->belongsToMany(Project::class, 'project_contractors', 'contractor_uuid', 'project_uuid', 'uuid', 'uuid')
             ->withPivot([
                 'contractor_type',
                 'contract_amount',

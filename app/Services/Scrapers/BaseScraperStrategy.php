@@ -57,7 +57,8 @@ abstract class BaseScraperStrategy implements ScraperStrategy
                 $response = $this->httpClient->get($url);
                 
                 if ($response->getStatusCode() === 200) {
-                    $rawData = json_decode($response->getBody()->getContents(), true);
+                    $content = $response->getBody()->getContents();
+                    $rawData = $this->extractData($content);
                     
                     if ($rawData && $this->validateData($rawData)) {
                         return $this->processData($rawData);
@@ -159,6 +160,22 @@ abstract class BaseScraperStrategy implements ScraperStrategy
         }
         
         return $mapped;
+    }
+
+    /**
+     * Extract data from response content
+     * Can be overridden by specific strategies
+     */
+    protected function extractData(string $content): ?array
+    {
+        // Try to parse as JSON first
+        $json = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $json;
+        }
+        
+        // If not JSON, return null (strategies can override this)
+        return null;
     }
 
     public function getErrors(): array

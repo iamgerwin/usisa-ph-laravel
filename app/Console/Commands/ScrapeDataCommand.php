@@ -219,6 +219,22 @@ class ScrapeDataCommand extends Command
             
             if (!$this->dryRun) {
                 $this->job->updateProgress($currentId);
+                
+                // Save progress to database every 10 batches to ensure resumability
+                static $batchCounter = 0;
+                $batchCounter++;
+                if ($batchCounter % 10 === 0) {
+                    $this->job->save();
+                    
+                    // Also check if process has been running too long (over 2 hours)
+                    $runtime = $this->job->started_at ? now()->diffInMinutes($this->job->started_at) : 0;
+                    if ($runtime > 120) {
+                        $this->warn("\nAuto-pausing after 2 hours of runtime for safety...");
+                        $this->job->markAsPaused();
+                        $this->info("Resume with: php artisan scrape:data --resume --source={$this->source->code}");
+                        break;
+                    }
+                }
             }
             
             $progressBar->advance(count($ids));
@@ -230,6 +246,7 @@ class ScrapeDataCommand extends Command
             if ($this->shouldStop()) {
                 $this->warn("\nStopping scraper...");
                 $this->job->markAsPaused();
+                $this->info("Resume with: php artisan scrape:data --resume --source={$this->source->code}");
                 break;
             }
         }

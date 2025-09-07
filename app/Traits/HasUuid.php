@@ -8,12 +8,16 @@ trait HasUuid
 {
     /**
      * Boot the trait
+     * 
+     * Uses orderedUuid() to generate time-ordered UUIDs (similar to UUID v7)
+     * which provide better database performance and natural chronological sorting
      */
     protected static function bootHasUuid(): void
     {
         static::creating(function ($model) {
             if (empty($model->uuid)) {
-                $model->uuid = (string) Str::uuid();
+                // Use orderedUuid for time-based ordering (UUID v7-like behavior)
+                $model->uuid = (string) Str::orderedUuid();
             }
         });
     }

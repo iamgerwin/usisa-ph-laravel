@@ -124,21 +124,21 @@ class Project extends Model
     // Many-to-many relationships
     public function implementingOffices(): BelongsToMany
     {
-        return $this->belongsToMany(ImplementingOffice::class, 'project_implementing_offices')
+        return $this->belongsToMany(ImplementingOffice::class, 'project_implementing_offices', 'project_uuid', 'implementing_office_uuid')
             ->withPivot(['role', 'is_primary'])
             ->withTimestamps();
     }
 
     public function sourceOfFunds(): BelongsToMany
     {
-        return $this->belongsToMany(SourceOfFund::class, 'project_source_of_funds')
+        return $this->belongsToMany(SourceOfFund::class, 'project_source_of_funds', 'project_uuid', 'source_of_fund_uuid')
             ->withPivot(['allocated_amount', 'utilized_amount', 'allocation_type', 'is_primary'])
             ->withTimestamps();
     }
 
     public function contractors(): BelongsToMany
     {
-        return $this->belongsToMany(Contractor::class, 'project_contractors')
+        return $this->belongsToMany(Contractor::class, 'project_contractors', 'project_uuid', 'contractor_uuid')
             ->withPivot([
                 'contractor_type',
                 'contract_amount',

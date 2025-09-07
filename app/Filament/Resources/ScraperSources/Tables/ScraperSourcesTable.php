@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ScraperSources\Tables;
 
+use App\Enums\ScraperJobStatus;
 use App\Models\ScraperSource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -45,14 +46,7 @@ class ScraperSourcesTable
                 TextColumn::make('latestJob.status')
                     ->label('Latest Job')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
-                        'completed' => 'success',
-                        'running' => 'warning',
-                        'failed' => 'danger',
-                        'paused' => 'gray',
-                        null => 'gray',
-                        default => 'secondary',
-                    }),
+                    ->color(fn (?ScraperJobStatus $state): string => $state?->color() ?? 'gray'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -7,7 +7,14 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(composer require:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(for file in app/Models/*.php)",
+      "Bash(do if ! grep -q \"use App\\\\Traits\\\\HasUuid;\" \"$file\")",
+      "Bash(then sed -i '' '/^namespace App\\\\Models;/a\\\n\\\nuse App\\\\Traits\\\\HasUuid;' \"$file\")",
+      "Bash(sed:*)",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(php:*)"
     ],
     "deny": [],
     "ask": []

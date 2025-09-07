@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('project_resources', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->string('title')->comment('Resource title');

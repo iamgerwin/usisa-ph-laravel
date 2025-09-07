@@ -9,11 +9,12 @@ use App\Filament\Resources\ProjectProgress\Tables\ProjectProgressTable;
 use App\Models\ProjectProgress;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -29,7 +30,9 @@ class ProjectProgressResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Progress Information')
+                Form::make()
+                    ->schema([
+                        Section::make('Progress Information')
                     ->description('Record project progress details')
                     ->schema([
                         Select::make('project_id')
@@ -107,6 +110,7 @@ class ProjectProgressResource extends Resource
                             ->maxLength(255)
                             ->placeholder('Name of person reporting progress'),
                     ]),
+                ]),
             ]);
     }
 

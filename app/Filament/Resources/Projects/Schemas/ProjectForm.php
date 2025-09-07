@@ -285,7 +285,46 @@ class ProjectForm
                                             ->label('Metadata')
                                             ->keyLabel('Key')
                                             ->valueLabel('Value')
-                                            ->addButtonLabel('Add metadata'),
+                                            ->addButtonLabel('Add metadata')
+                                            ->formatStateUsing(function ($state) {
+                                                if (!$state) {
+                                                    return [];
+                                                }
+                                                
+                                                // Format nested objects/arrays as JSON strings for display
+                                                $formatted = [];
+                                                foreach ($state as $key => $value) {
+                                                    if (is_array($value) || is_object($value)) {
+                                                        // Convert objects/arrays to pretty JSON for readability
+                                                        $formatted[$key] = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                                                    } else {
+                                                        $formatted[$key] = $value;
+                                                    }
+                                                }
+                                                return $formatted;
+                                            })
+                                            ->dehydrateStateUsing(function ($state) {
+                                                if (!$state) {
+                                                    return [];
+                                                }
+                                                
+                                                // Parse JSON strings back to objects/arrays when saving
+                                                $parsed = [];
+                                                foreach ($state as $key => $value) {
+                                                    if (is_string($value)) {
+                                                        // Try to parse as JSON
+                                                        $decoded = json_decode($value, true);
+                                                        if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_object($decoded))) {
+                                                            $parsed[$key] = $decoded;
+                                                        } else {
+                                                            $parsed[$key] = $value;
+                                                        }
+                                                    } else {
+                                                        $parsed[$key] = $value;
+                                                    }
+                                                }
+                                                return $parsed;
+                                            }),
                                     ]),
                             ]),
                     ])

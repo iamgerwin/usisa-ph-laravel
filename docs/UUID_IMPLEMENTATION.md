@@ -6,6 +6,9 @@ This document outlines the implementation of UUID (Universally Unique Identifier
 ## Implementation Date
 September 7, 2025
 
+## Latest Updates
+- **December 2024**: Upgraded to time-ordered UUIDs (similar to UUID v7) for improved performance
+
 ## Key Features Implemented
 
 ### 1. UUID Security Layer
@@ -31,7 +34,8 @@ trait HasUuid
     {
         static::creating(function ($model) {
             if (empty($model->uuid)) {
-                $model->uuid = (string) Str::uuid();
+                // Uses orderedUuid() for time-ordered generation (UUID v7-like)
+                $model->uuid = (string) Str::orderedUuid();
             }
         });
     }
@@ -166,10 +170,11 @@ Checks for:
 ## Security Considerations
 
 ### UUID Benefits
-1. **Non-Sequential**: Random generation prevents pattern analysis
+1. **Time-Ordered**: Using ordered UUIDs (similar to UUID v7) provides natural chronological sorting
 2. **Globally Unique**: No collision risk across distributed systems
 3. **URL-Safe**: Can be safely used in public URLs and APIs
-4. **Version 4 UUIDs**: Cryptographically secure random generation
+4. **Performance Optimized**: Time-based ordering improves database index performance
+5. **Non-Enumerable**: Still prevents enumeration attacks while maintaining ordering benefits
 
 ### Implementation Best Practices
 1. UUID generation happens automatically on model creation
@@ -253,9 +258,35 @@ SESSION_PATH=/
    - Implement UUID-based activity logging
 
 3. **Performance Optimization**
-   - Consider UUID v7 for time-ordered generation
+   - ~~Consider UUID v7 for time-ordered generation~~ ✅ **IMPLEMENTED**: Now using ordered UUIDs
    - Implement UUID caching strategies
+
+## Time-Ordered UUID Implementation Details
+
+### Why Ordered UUIDs?
+
+The system now uses Laravel's `Str::orderedUuid()` method, which generates time-ordered UUIDs similar to UUID v7:
+
+1. **Better Index Performance**: Time-ordered UUIDs are stored sequentially in B-tree indexes, reducing index fragmentation
+2. **Natural Sorting**: Records are automatically sorted by creation time when ordered by UUID
+3. **Maintained Security**: Still cryptographically secure and non-enumerable
+4. **Database Efficiency**: Reduces page splits in database indexes, improving write performance
+
+### Technical Characteristics
+
+- **Format**: Standard UUID format (36 characters including hyphens)
+- **Time Component**: First segment contains timestamp information
+- **Randomness**: Remaining segments maintain randomness for uniqueness
+- **Sorting**: Lexicographical sorting matches chronological order
+
+### Performance Benefits
+
+```sql
+-- With ordered UUIDs, this query is naturally optimized:
+SELECT * FROM projects ORDER BY uuid DESC LIMIT 10;
+-- Returns the 10 most recently created projects without additional timestamp column
+```
 
 ## Conclusion
 
-The UUID implementation provides a robust security layer for the USISA PH Laravel project. By replacing enumerable IDs with UUIDs in public interfaces, the system is protected against common attack vectors while maintaining full backward compatibility and performance.
+The UUID implementation provides a robust security layer for the USISA PH Laravel project. By using time-ordered UUIDs (similar to UUID v7), the system achieves optimal database performance while maintaining security against enumeration attacks. This implementation offers the best of both worlds: security and performance.

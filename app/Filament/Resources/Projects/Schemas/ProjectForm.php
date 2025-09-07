@@ -224,7 +224,7 @@ class ProjectForm
                                     ->schema([
                                         Select::make('contractors')
                                             ->label('Contractors')
-                                            ->relationship('contractors', 'company_name')
+                                            ->relationship('contractors', 'name')
                                             ->multiple()
                                             ->searchable()
                                             ->preload(),

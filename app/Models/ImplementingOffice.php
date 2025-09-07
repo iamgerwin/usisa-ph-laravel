@@ -34,7 +34,7 @@ class ImplementingOffice extends Model
      */
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class, 'project_implementing_offices')
+        return $this->belongsToMany(Project::class, 'project_implementing_offices', 'implementing_office_uuid', 'project_uuid', 'uuid', 'uuid')
             ->withPivot(['role', 'is_primary'])
             ->withTimestamps();
     }

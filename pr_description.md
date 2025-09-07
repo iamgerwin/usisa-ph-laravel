@@ -1,85 +1,53 @@
-# Pull Request: Data Scraper System Implementation
-
 ## Summary
-Implemented a comprehensive data scraper system for government project data sources with Strategy Pattern architecture, database-driven configuration, and Filament admin panel integration. Successfully scraped and imported 11,000+ projects from DIME.gov.ph.
+I implemented comprehensive data normalization for DIME.gov.ph scraped data, extracting entity relationships from JSON metadata into proper relational database tables.
 
-## Key Features
+## Changes Made
 
-### 1. Scraper Architecture
-- **Strategy Pattern Implementation**: Flexible architecture supporting multiple data sources
-- **Base Scraper Strategy**: Abstract class with common functionality for HTTP clients, rate limiting, and error handling
-- **DIME Scraper Strategy**: Specific implementation for DIME.gov.ph with Next.js SSR data extraction
+### Database Migrations
+- Added `dime_id` field to `implementing_offices`, `contractors`, and `source_of_funds` tables for tracking DIME source IDs
+- Added `dime_id` and `logo_url` fields to `programs` table
+- All migrations include proper indexes and foreign key constraints
 
-### 2. Database Schema
-- **scraper_sources table**: Stores configuration for each data source
-- **scraper_jobs table**: Tracks job progress with detailed statistics
-- **projects table enhancements**: Added DIME-specific fields for complete data capture
-- **PHP Enums**: Created ScraperJobStatus enum for type safety and code readability
+### Model Updates
+- **ImplementingOffice**: Added relationships, fillable fields, and UUID support
+- **Contractor**: Added relationships, fillable fields, and UUID support  
+- **SourceOfFund**: Added relationships, fillable fields, and UUID support
+- **Project**: Updated pivot table relationships to use UUID-based foreign keys
 
-### 3. Laravel Command
-- Comprehensive `scrape:data` command with options:
-  - `--source`: Select data source
-  - `--start/--end`: Define ID range
-  - `--chunk`: Batch processing size
-  - `--delay`: Rate limiting between requests
-  - `--retry`: Retry attempts for failed requests
-  - `--resume`: Resume from last failed/paused job
-  - `--dry-run`: Test mode without database writes
-- Real-time progress tracking
-- Graceful error handling and recovery
+### Normalization Command
+- Created `php artisan dime:normalize-data` command
+- Supports batch processing with configurable batch size
+- Includes dry-run mode for testing
+- Provides detailed progress tracking and statistics
+- Uses database transactions for data integrity
+- Handles duplicate detection using both dime_id and name fields
 
-### 4. Filament Admin Integration
-- **Scraper Sources Management**: Add/edit configurations, field mappings, rate limits
-- **Scraper Jobs Monitoring**: View progress, statistics, error logs
-- **Run Scraper Action**: Launch scrapers directly from admin panel
-- **Project Form Enhancements**: 
-  - Fixed Filament v4 namespace compatibility issues
-  - Fixed contractors relationship column name
-  - Enhanced metadata display to show JSON instead of [object Object]
+## Testing
+- Successfully ran migrations on development database
+- Tested normalization command with dry-run on 11,337 existing DIME projects
+- Verified command processes all projects without errors
 
-### 5. Data Processing
-- Handles all DIME.gov.ph fields including:
-  - Implementing offices
-  - Contractors
-  - Source of funds
-  - Programs (auto-created if not existing)
-  - Location hierarchy (Region → Province → City → Barangay)
-  - Project metadata with proper JSON formatting
+## Usage
 
-## Technical Improvements
-- **Duplicate Detection**: Uses both dime_id and project_code for matching
-- **Rate Limiting**: Configurable requests per second with automatic throttling
-- **Error Recovery**: Automatic retry with exponential backoff
-- **Memory Management**: Batch processing with configurable chunk sizes
-- **Progress Tracking**: Database updates and console progress bars
+```bash
+# Run normalization with default settings
+php artisan dime:normalize-data
 
-## Testing & Results
-- Successfully scraped and imported 11,337+ projects from DIME.gov.ph
-- Handles Next.js SSR responses by extracting JSON from __NEXT_DATA__ script tags
-- Processes ~100 projects per minute with proper rate limiting
-- Comprehensive error logging and recovery mechanisms
+# Run with custom batch size
+php artisan dime:normalize-data --batch=50
 
-## Documentation
-- Created detailed SCRAPER_DOCUMENTATION.md with:
-  - Architecture overview
-  - Command usage examples
-  - Admin panel instructions
-  - Adding new data sources guide
-  - Troubleshooting section
+# Test with dry-run mode
+php artisan dime:normalize-data --dry-run
+```
 
-## Files Changed
-- Created 15+ new files for scraper system
-- Modified existing models and migrations
-- Fixed multiple Filament v4 compatibility issues
-- Enhanced Project model with relationships and DIME fields
+## Deployment Notes
+1. Run migrations: `php artisan migrate`
+2. Execute normalization: `php artisan dime:normalize-data`
+3. Monitor logs for any errors during processing
 
-## Future Enhancements
-- Queue-based processing for larger datasets
-- Webhook notifications for job completion
-- API endpoint for programmatic access
-- Scheduled scraping via Laravel scheduler
-- Data validation and quality checks
+## Next Steps
+- Update DimeScraperStrategy to create relationships directly during scraping
+- Remove metadata JSON storage once relationships are established
+- Add data validation and integrity checks
 
----
-
-This PR delivers a production-ready, scalable data scraper system that successfully imports government project data while maintaining code quality and following Laravel best practices.
+Ticket: https://app.clickup.com/t/86d07vv9d

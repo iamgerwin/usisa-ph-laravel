@@ -12,11 +12,12 @@ class ScraperSourceSeeder extends Seeder
      */
     public function run(): void
     {
-        ScraperSource::create([
-            'code' => 'dime',
+        ScraperSource::updateOrCreate(
+            ['code' => 'dime'],
+            [
             'name' => 'DIME.gov.ph',
-            'base_url' => 'https://api.dime.gov.ph',
-            'endpoint_pattern' => '/api/v1/projects/{id}',
+            'base_url' => 'https://www.dime.gov.ph/_next/data/Vd6FZjlpzlPnb-KLFR5il',
+            'endpoint_pattern' => '/project/{id}.json',
             'is_active' => true,
             'rate_limit' => 10,
             'timeout' => 30,

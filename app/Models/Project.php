@@ -15,6 +15,7 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'dime_id',
         'project_name',
         'project_code',
         'description',
@@ -22,11 +23,21 @@ class Project extends Model
         'slug',
         'program_id',
         'region_id',
+        'region_code',
+        'region_name',
         'province_id',
+        'province_code',
+        'province_name',
         'city_id',
+        'city_code',
+        'city_name',
         'barangay_id',
+        'barangay_code',
+        'barangay_name',
         'street_address',
         'zip_code',
+        'country',
+        'state',
         'latitude',
         'longitude',
         'status',
@@ -43,9 +54,12 @@ class Project extends Model
         'is_active',
         'is_featured',
         'metadata',
+        'data_source',
+        'last_synced_at',
     ];
 
     protected $casts = [
+        'dime_id' => 'integer',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'cost' => 'decimal:2',
@@ -60,6 +74,7 @@ class Project extends Model
         'as_of_date' => 'date',
         'updates_count' => 'integer',
         'metadata' => 'array',
+        'last_synced_at' => 'datetime',
     ];
 
     protected static function boot()

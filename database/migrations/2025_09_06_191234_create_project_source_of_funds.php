@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('project_source_of_funds', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->foreignId('source_of_fund_id')->constrained('source_of_funds')->onDelete('cascade');

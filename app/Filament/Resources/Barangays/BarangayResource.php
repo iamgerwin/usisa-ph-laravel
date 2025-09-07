@@ -8,11 +8,12 @@ use App\Filament\Resources\Barangays\Pages\ListBarangays;
 use App\Filament\Resources\Barangays\Tables\BarangaysTable;
 use App\Models\Barangay;
 use BackedEnum;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -28,7 +29,9 @@ class BarangayResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Barangay Information')
+                Form::make()
+                    ->schema([
+                        Section::make('Barangay Information')
                     ->description('Basic information about the barangay')
                     ->schema([
                         Grid::make(2)
@@ -72,6 +75,7 @@ class BarangayResource extends Resource
                             ->helperText('Toggle to activate or deactivate this barangay')
                             ->default(true),
                     ]),
+                ]),
             ]);
     }
 

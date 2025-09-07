@@ -8,11 +8,12 @@ use App\Filament\Resources\Programs\Pages\ListPrograms;
 use App\Filament\Resources\Programs\Tables\ProgramsTable;
 use App\Models\Program;
 use BackedEnum;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -29,7 +30,9 @@ class ProgramResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Program Information')
+                Form::make()
+                    ->schema([
+                        Section::make('Program Information')
                     ->description('Basic program details and identification')
                     ->schema([
                         Grid::make(2)
@@ -76,6 +79,7 @@ class ProgramResource extends Resource
                             ->helperText('Toggle to activate or deactivate this program')
                             ->default(true),
                     ]),
+                ]),
             ]);
     }
 

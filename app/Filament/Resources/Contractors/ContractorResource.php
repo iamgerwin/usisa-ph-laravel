@@ -10,12 +10,13 @@ use App\Models\Contractor;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -31,7 +32,9 @@ class ContractorResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Basic Information')
+                Form::make()
+                    ->schema([
+                        Section::make('Basic Information')
                     ->description('Core contractor details')
                     ->schema([
                         Grid::make(2)
@@ -127,6 +130,7 @@ class ContractorResource extends Resource
                                     ->default(true),
                             ]),
                     ]),
+                ]),
             ]);
     }
 

@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('projects', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->string('project_name')->comment('Official project name');
             $table->string('project_code', 50)->unique()->comment('Unique project code');

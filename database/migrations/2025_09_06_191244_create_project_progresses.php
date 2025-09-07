@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('project_progresses', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->string('title')->comment('Progress update title');

@@ -34,7 +34,7 @@ class SourceOfFund extends Model
      */
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class, 'project_source_of_funds')
+        return $this->belongsToMany(Project::class, 'project_source_of_funds', 'source_of_fund_uuid', 'project_uuid', 'uuid', 'uuid')
             ->withPivot(['allocated_amount', 'utilized_amount', 'allocation_type', 'is_primary'])
             ->withTimestamps();
     }

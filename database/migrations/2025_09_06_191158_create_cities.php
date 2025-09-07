@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cities', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->foreignId('province_id')->constrained()->onDelete('cascade');
             $table->string('code', 20)->unique()->comment('PSGC city/municipality code');

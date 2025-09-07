@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('implementing_offices', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->string('name')->comment('Office name');
             $table->string('name_abbreviation', 20)->nullable()->comment('Office abbreviation');

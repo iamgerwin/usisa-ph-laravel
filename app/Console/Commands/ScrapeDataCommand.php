@@ -25,8 +25,7 @@ class ScrapeDataCommand extends Command
                             {--retry=3 : Number of retry attempts for failed requests}
                             {--resume : Resume from last failed/paused job}
                             {--job= : Specific job ID to resume}
-                            {--dry-run : Run without saving to database}
-                            {--verbose : Show detailed output}';
+                            {--dry-run : Run without saving to database}';
 
     /**
      * The console command description.
@@ -39,7 +38,6 @@ class ScrapeDataCommand extends Command
     protected ScraperJob $job;
     protected $strategy;
     protected bool $dryRun = false;
-    protected bool $verbose = false;
     protected int $delay = 1;
     protected int $chunkSize = 100;
 
@@ -49,7 +47,6 @@ class ScrapeDataCommand extends Command
     public function handle()
     {
         $this->dryRun = $this->option('dry-run');
-        $this->verbose = $this->option('verbose');
         $this->delay = (int) $this->option('delay');
         $this->chunkSize = (int) $this->option('chunk');
 
@@ -190,7 +187,7 @@ class ScrapeDataCommand extends Command
             $batchEnd = min($currentId + $this->chunkSize - 1, $endId);
             $ids = range($currentId, $batchEnd);
             
-            if ($this->verbose) {
+            if ($this->output->isVerbose()) {
                 $this->line("\nProcessing batch: {$currentId} to {$batchEnd}");
             }
             
@@ -207,7 +204,7 @@ class ScrapeDataCommand extends Command
                     $this->job->incrementError();
                     $this->job->logError($data['source_id'] ?? 0, $e->getMessage());
                     
-                    if ($this->verbose) {
+                    if ($this->output->isVerbose()) {
                         $this->error("\nError saving data: {$e->getMessage()}");
                     }
                 }
@@ -276,14 +273,14 @@ class ScrapeDataCommand extends Command
                 $existing->update($data);
                 $this->job->incrementUpdate();
                 
-                if ($this->verbose) {
+                if ($this->output->isVerbose()) {
                     $this->info("Updated: {$uniqueField} = {$uniqueValue}");
                 }
             } else {
                 $modelClass::create($data);
                 $this->job->incrementCreate();
                 
-                if ($this->verbose) {
+                if ($this->output->isVerbose()) {
                     $this->info("Created: {$uniqueField} = {$uniqueValue}");
                 }
             }
@@ -320,7 +317,7 @@ class ScrapeDataCommand extends Command
             ]
         );
         
-        if ($this->job->error_count > 0 && $this->verbose) {
+        if ($this->job->error_count > 0 && $this->output->isVerbose()) {
             $this->warn("\nErrors encountered:");
             $errors = array_slice($this->job->errors ?? [], -10);
             foreach ($errors as $error) {

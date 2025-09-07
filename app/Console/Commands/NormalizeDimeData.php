@@ -170,8 +170,8 @@ class NormalizeDimeData extends Command
             
             // Attach to project
             if ($office && !$isDryRun) {
-                if (!$project->implementingOffices()->where('implementing_office_uuid', $office->uuid)->exists()) {
-                    $project->implementingOffices()->attach($office->uuid);
+                if (!$project->implementingOffices()->where('implementing_office_id', $office->id)->exists()) {
+                    $project->implementingOffices()->attach($office->id);
                     $this->stats['relationships_created']++;
                 }
             }
@@ -212,8 +212,8 @@ class NormalizeDimeData extends Command
             
             // Attach to project
             if ($contractor && !$isDryRun) {
-                if (!$project->contractors()->where('contractor_uuid', $contractor->uuid)->exists()) {
-                    $project->contractors()->attach($contractor->uuid);
+                if (!$project->contractors()->where('contractor_id', $contractor->id)->exists()) {
+                    $project->contractors()->attach($contractor->id);
                     $this->stats['relationships_created']++;
                 }
             }
@@ -254,8 +254,8 @@ class NormalizeDimeData extends Command
             
             // Attach to project
             if ($source && !$isDryRun) {
-                if (!$project->sourceOfFunds()->where('source_of_fund_uuid', $source->uuid)->exists()) {
-                    $project->sourceOfFunds()->attach($source->uuid);
+                if (!$project->sourceOfFunds()->where('source_of_fund_id', $source->id)->exists()) {
+                    $project->sourceOfFunds()->attach($source->id);
                     $this->stats['relationships_created']++;
                 }
             }

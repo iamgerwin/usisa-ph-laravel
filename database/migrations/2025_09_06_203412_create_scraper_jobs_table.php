@@ -13,6 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('scraper_jobs', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->foreignId('source_id')->constrained('scraper_sources')->onDelete('cascade');
             $table->integer('start_id')->comment('Starting ID for the scraping range');

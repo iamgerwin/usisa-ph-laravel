@@ -2,7 +2,15 @@
 
 namespace App\Filament\Resources\ScraperJobs\Schemas;
 
+use App\Enums\ScraperJobStatus;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use App\Models\ScraperSource;
 
 class ScraperJobForm
 {
@@ -10,7 +18,126 @@ class ScraperJobForm
     {
         return $schema
             ->components([
-                //
+                Section::make('Job Configuration')
+                    ->description('Configure the scraping job parameters')
+                    ->schema([
+                        Select::make('source_id')
+                            ->label('Source')
+                            ->relationship('source', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->placeholder('Select a scraper source')
+                            ->disabled(fn ($operation) => $operation === 'edit'),
+
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('start_id')
+                                    ->label('Start ID')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(1)
+                                    ->disabled(fn ($operation) => $operation === 'edit'),
+                                
+                                TextInput::make('end_id')
+                                    ->label('End ID')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->rules(['gte:start_id'])
+                                    ->disabled(fn ($operation) => $operation === 'edit'),
+                                
+                                TextInput::make('chunk_size')
+                                    ->label('Chunk Size')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(1000)
+                                    ->default(100)
+                                    ->helperText('Number of items to process at once')
+                                    ->disabled(fn ($operation) => $operation === 'edit'),
+                            ]),
+
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('triggered_by')
+                                    ->label('Triggered By')
+                                    ->maxLength(255)
+                                    ->placeholder('Username or system that triggered this job')
+                                    ->default(auth()->user()?->name ?? 'System')
+                                    ->disabled(fn ($operation) => $operation === 'edit'),
+                                
+                                Select::make('status')
+                                    ->label('Status')
+                                    ->options(ScraperJobStatus::options())
+                                    ->default(ScraperJobStatus::PENDING->value)
+                                    ->disabled(fn ($operation) => $operation === 'create'),
+                            ]),
+                    ]),
+
+                Section::make('Progress Information')
+                    ->description('Current job progress and statistics')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('current_id')
+                                    ->label('Current ID')
+                                    ->numeric()
+                                    ->disabled(),
+                                
+                                TextInput::make('success_count')
+                                    ->label('Success Count')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->disabled(),
+                                
+                                TextInput::make('error_count')
+                                    ->label('Error Count')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->disabled(),
+                            ]),
+
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('skip_count')
+                                    ->label('Skip Count')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->disabled(),
+                                
+                                TextInput::make('update_count')
+                                    ->label('Update Count')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->disabled(),
+                                
+                                TextInput::make('create_count')
+                                    ->label('Create Count')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->disabled(),
+                            ]),
+                    ])
+                    ->visibleOn('edit')
+                    ->collapsed(),
+
+                Section::make('Additional Information')
+                    ->schema([
+                        Textarea::make('notes')
+                            ->label('Notes')
+                            ->rows(3)
+                            ->maxLength(1000)
+                            ->placeholder('Additional notes about this job'),
+                    ])
+                    ->collapsed(),
+                
+                // Hidden fields for internal use
+                Hidden::make('started_at'),
+                Hidden::make('completed_at'),
+                Hidden::make('stats'),
+                Hidden::make('errors'),
             ]);
     }
 }

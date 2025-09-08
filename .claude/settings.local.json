@@ -7,7 +7,17 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(composer require:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(for file in app/Models/*.php)",
+      "Bash(do if ! grep -q \"use App\\\\Traits\\\\HasUuid;\" \"$file\")",
+      "Bash(then sed -i '' '/^namespace App\\\\Models;/a\\\n\\\nuse App\\\\Traits\\\\HasUuid;' \"$file\")",
+      "Bash(sed:*)",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(php:*)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' HEAD~20..HEAD)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' HEAD~21..HEAD)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' feature/ticket-86d07v1by-dime-gov-database-structure..HEAD)"
     ],
     "deny": [],
     "ask": []

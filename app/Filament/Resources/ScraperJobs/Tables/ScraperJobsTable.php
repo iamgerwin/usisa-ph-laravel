@@ -9,7 +9,8 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ProgressBarColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\DateFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use App\Models\ScraperSource;
@@ -114,10 +115,44 @@ class ScraperJobsTable
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options(ScraperJobStatus::options()),
-                DateFilter::make('started_at')
-                    ->label('Started Date'),
-                DateFilter::make('completed_at')
-                    ->label('Completed Date'),
+                Filter::make('started_at')
+                    ->label('Started Date')
+                    ->form([
+                        DatePicker::make('started_from')
+                            ->label('From'),
+                        DatePicker::make('started_to')
+                            ->label('To'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['started_from'],
+                                fn ($query, $date) => $query->whereDate('started_at', '>=', $date)
+                            )
+                            ->when(
+                                $data['started_to'],
+                                fn ($query, $date) => $query->whereDate('started_at', '<=', $date)
+                            );
+                    }),
+                Filter::make('completed_at')
+                    ->label('Completed Date')
+                    ->form([
+                        DatePicker::make('completed_from')
+                            ->label('From'),
+                        DatePicker::make('completed_to')
+                            ->label('To'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['completed_from'],
+                                fn ($query, $date) => $query->whereDate('completed_at', '>=', $date)
+                            )
+                            ->when(
+                                $data['completed_to'],
+                                fn ($query, $date) => $query->whereDate('completed_at', '<=', $date)
+                            );
+                    }),
             ])
             ->actions([
                 EditAction::make(),

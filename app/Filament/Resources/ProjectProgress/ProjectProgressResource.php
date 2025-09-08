@@ -37,7 +37,7 @@ class ProjectProgressResource extends Resource
                     ->schema([
                         Select::make('project_id')
                             ->label('Project')
-                            ->relationship('project', 'title')
+                            ->relationship('project', 'project_name')
                             ->searchable()
                             ->preload()
                             ->required()

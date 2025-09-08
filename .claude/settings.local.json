@@ -14,7 +14,10 @@
       "Bash(sed:*)",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' HEAD~20..HEAD)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' HEAD~21..HEAD)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' feature/ticket-86d07v1by-dime-gov-database-structure..HEAD)"
     ],
     "deny": [],
     "ask": []

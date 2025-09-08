@@ -7,7 +7,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\ProgressBarColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
@@ -39,11 +38,13 @@ class ScraperJobsTable
                     ->numeric()
                     ->sortable()
                     ->placeholder('N/A'),
-                ProgressBarColumn::make('progress_percentage')
+                TextColumn::make('progress_percentage')
                     ->label('Progress')
                     ->getStateUsing(function ($record) {
                         return $record->progress_percentage;
                     })
+                    ->suffix('%')
+                    ->numeric(decimalPlaces: 2)
                     ->color('success'),
                 BadgeColumn::make('status')
                     ->label('Status')

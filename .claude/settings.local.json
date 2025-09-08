@@ -17,7 +17,8 @@
       "Bash(php:*)",
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' HEAD~20..HEAD)",
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' HEAD~21..HEAD)",
-      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' feature/ticket-86d07v1by-dime-gov-database-structure..HEAD)"
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed \"\"/🤖 Generated with/d; /Co-Authored-By: Claude/d\"\"' feature/ticket-86d07v1by-dime-gov-database-structure..HEAD)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --msg-filter 'sed -e \"\"/🤖 Generated with/d\"\" -e \"\"/Co-Authored-By: Claude/d\"\" -e \"\"s|\\[Claude Code\\](https://claude.ai/code)||g\"\" -e \"\"/^[[:space:]]*$/d\"\"' -- --all)"
     ],
     "deny": [],
     "ask": []

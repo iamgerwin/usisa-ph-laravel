@@ -2,7 +2,14 @@
 
 namespace App\Filament\Resources\ProjectProgress\Schemas;
 
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use App\Models\Project;
 
 class ProjectProgressForm
 {
@@ -10,7 +17,84 @@ class ProjectProgressForm
     {
         return $schema
             ->components([
-                //
+                Section::make('Progress Information')
+                    ->description('Record project progress details')
+                    ->schema([
+                        Select::make('project_id')
+                            ->label('Project')
+                            ->relationship('project', 'title')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->placeholder('Select a project'),
+
+                        Grid::make(2)
+                            ->schema([
+                                DatePicker::make('progress_date')
+                                    ->label('Progress Date')
+                                    ->required()
+                                    ->default(now())
+                                    ->maxDate(now()),
+                                
+                                Select::make('status')
+                                    ->label('Status')
+                                    ->required()
+                                    ->options([
+                                        'in_progress' => 'In Progress',
+                                        'completed' => 'Completed',
+                                        'delayed' => 'Delayed',
+                                        'cancelled' => 'Cancelled',
+                                    ])
+                                    ->default('in_progress'),
+                            ]),
+
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('progress_percentage')
+                                    ->label('Overall Progress (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->step(0.01)
+                                    ->suffix('%')
+                                    ->placeholder('0.00'),
+                                
+                                TextInput::make('physical_progress')
+                                    ->label('Physical Progress (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->step(0.01)
+                                    ->suffix('%')
+                                    ->placeholder('0.00'),
+                                
+                                TextInput::make('financial_progress')
+                                    ->label('Financial Progress (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->step(0.01)
+                                    ->suffix('%')
+                                    ->placeholder('0.00'),
+                            ]),
+
+                        Textarea::make('description')
+                            ->label('Description')
+                            ->rows(3)
+                            ->maxLength(1000)
+                            ->placeholder('Describe the progress made during this period'),
+
+                        Textarea::make('remarks')
+                            ->label('Remarks')
+                            ->rows(2)
+                            ->maxLength(500)
+                            ->placeholder('Additional notes or observations'),
+
+                        TextInput::make('reported_by')
+                            ->label('Reported By')
+                            ->maxLength(255)
+                            ->placeholder('Name of person reporting progress'),
+                    ]),
             ]);
     }
 }

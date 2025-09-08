@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('regions', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->string('code', 20)->unique()->comment('PSGC region code');
             $table->string('name')->comment('Region name');

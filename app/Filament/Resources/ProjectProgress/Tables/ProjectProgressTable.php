@@ -7,7 +7,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\DateFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use App\Models\Project;
@@ -76,7 +77,7 @@ class ProjectProgressTable
             ->filters([
                 SelectFilter::make('project_id')
                     ->label('Project')
-                    ->relationship('project', 'title')
+                    ->relationship('project', 'project_name')
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('status')
@@ -87,8 +88,24 @@ class ProjectProgressTable
                         'delayed' => 'Delayed',
                         'cancelled' => 'Cancelled',
                     ]),
-                DateFilter::make('progress_date')
-                    ->label('Progress Date'),
+                Filter::make('progress_date')
+                    ->form([
+                        DatePicker::make('progress_date_from')
+                            ->label('From'),
+                        DatePicker::make('progress_date_to')
+                            ->label('To'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['progress_date_from'],
+                                fn ($query, $date) => $query->whereDate('progress_date', '>=', $date)
+                            )
+                            ->when(
+                                $data['progress_date_to'],
+                                fn ($query, $date) => $query->whereDate('progress_date', '<=', $date)
+                            );
+                    }),
             ])
             ->actions([
                 EditAction::make(),

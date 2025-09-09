@@ -23,7 +23,14 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
         try {
             // Try different approaches to get the data
             
-            // Approach 1: Try direct API endpoints
+            // Approach 1: Try AJAX endpoint used by the website
+            $ajaxUrl = 'https://sumbongsapangulo.ph/wp-admin/admin-ajax.php';
+            $ajaxProjects = $this->scrapeViaAjax($ajaxUrl);
+            if (!empty($ajaxProjects)) {
+                return $ajaxProjects;
+            }
+            
+            // Approach 2: Try direct API endpoints
             $apiEndpoints = [
                 '/api/flood-projects',
                 '/api/projects/flood-control',
@@ -38,10 +45,10 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
                 }
             }
             
-            // Approach 2: Try scraping the HTML page with proper headers
+            // Approach 3: Try scraping the HTML page with proper headers
             $response = Http::withHeaders($this->getHeaders())
                 ->timeout(30)
-                ->get(self::FLOOD_PROJECTS_URL);
+                ->get(self::BASE_URL);
                 
             if ($response->successful()) {
                 $projects = $this->parseHtmlResponse($response->body());
@@ -55,6 +62,57 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
         }
         
         return $projects;
+    }
+    
+    /**
+     * Scrape projects via AJAX endpoint
+     */
+    private function scrapeViaAjax(string $ajaxUrl): array
+    {
+        $allProjects = [];
+        $page = 0;
+        $perPage = 100;
+        $hasMore = true;
+        
+        while ($hasMore && $page < 50) { // Limit to 50 pages to avoid infinite loops
+            try {
+                $response = Http::withHeaders($this->getHeaders())
+                    ->asForm()
+                    ->timeout(30)
+                    ->post($ajaxUrl, [
+                        'action' => 'load_more_projects',
+                        'page' => $page,
+                        'per_page' => $perPage,
+                        'search_itm' => '',
+                        'region' => '',
+                        'municipality' => '',
+                        'type_of_work' => '',
+                        'year' => '',
+                    ]);
+                
+                if ($response->successful()) {
+                    $data = $response->json();
+                    
+                    if (isset($data['html'])) {
+                        $pageProjects = $this->parseHtmlResponse($data['html']);
+                        $allProjects = array_merge($allProjects, $pageProjects);
+                    }
+                    
+                    $hasMore = isset($data['has_more']) && $data['has_more'];
+                    $page++;
+                    
+                    // Small delay to be respectful to the server
+                    usleep(500000); // 0.5 seconds
+                } else {
+                    break;
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch AJAX page ' . $page, ['error' => $e->getMessage()]);
+                break;
+            }
+        }
+        
+        return $allProjects;
     }
     
     /**
@@ -102,23 +160,44 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
         $projects = [];
         $crawler = new Crawler($html);
         
-        // Look for the projects table
-        $table = $crawler->filter('table')->first();
+        // Look for the projects table with class fcp-table
+        $table = $crawler->filter('table.fcp-table')->first();
         
         if ($table->count() > 0) {
-            $rows = $table->filter('tbody tr');
+            $rows = $table->filter('tbody#projects-body tr');
             
             $rows->each(function (Crawler $row) use (&$projects) {
                 $cells = $row->filter('td');
                 
                 if ($cells->count() >= 5) {
-                    $project = [
-                        'description' => trim($cells->eq(0)->text()),
+                    // Extract project details from table row
+                    $descriptionCell = $cells->eq(0);
+                    $link = $descriptionCell->filter('a.load-project-card')->first();
+                    $description = $link->count() > 0 ? trim($link->text()) : trim($descriptionCell->text());
+                    $projectId = $link->count() > 0 ? $link->attr('data-id') : null;
+                    
+                    // Extract additional data from the report button
+                    $reportBtn = $cells->eq(5)->filter('button.open-report-form')->first();
+                    $additionalData = [];
+                    if ($reportBtn->count() > 0) {
+                        $additionalData = [
+                            'contract_id' => $reportBtn->attr('data-contract_id'),
+                            'region' => $reportBtn->attr('data-region'),
+                            'year' => $reportBtn->attr('data-year'),
+                        ];
+                    }
+                    
+                    // Extract data from the template if available
+                    $templateData = $this->extractTemplateData($crawler, $projectId);
+                    
+                    $project = array_merge([
+                        'project_id' => $projectId,
+                        'description' => $description,
                         'location' => trim($cells->eq(1)->text()),
                         'contractor' => trim($cells->eq(2)->text()),
                         'cost' => $this->parseCost(trim($cells->eq(3)->text())),
                         'completion_date' => $this->parseDate(trim($cells->eq(4)->text())),
-                    ];
+                    ], $additionalData, $templateData);
                     
                     $projects[] = $this->mapToProjectData($project);
                 }
@@ -155,29 +234,80 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
     }
     
     /**
+     * Extract additional data from template elements
+     */
+    private function extractTemplateData(Crawler $crawler, ?string $projectId): array
+    {
+        if (!$projectId) {
+            return [];
+        }
+        
+        $template = $crawler->filter('#proj-card-' . $projectId)->first();
+        if ($template->count() === 0) {
+            return [];
+        }
+        
+        $templateData = [];
+        
+        // Extract start date
+        $startDate = $template->filter('.start-date span')->first();
+        if ($startDate->count() > 0) {
+            $templateData['start_date'] = $this->parseDate(trim($startDate->text()));
+        }
+        
+        // Extract coordinates from location
+        $location = $template->filter('.longi span')->first();
+        if ($location->count() > 0) {
+            $locationText = trim($location->text());
+            if (preg_match('/\(([\-\d.]+)\s*,\s*([\-\d.]+)\)/', $locationText, $matches)) {
+                $templateData['latitude'] = (float) $matches[1];
+                $templateData['longitude'] = (float) $matches[2];
+            }
+        }
+        
+        // Extract type of work
+        $otherDetails = $template->filter('.others span');
+        if ($otherDetails->count() >= 2) {
+            $templateData['type_of_work'] = trim($otherDetails->eq(1)->text());
+        }
+        
+        return $templateData;
+    }
+    
+    /**
      * Map scraped data to project format
      */
     private function mapToProjectData(array $data): array
     {
-        // Generate a unique ID based on project description and location
-        $externalId = md5($data['description'] . '|' . $data['location']);
+        // Generate a unique ID - use project_id if available, otherwise create from description
+        $externalId = $data['project_id'] ?? md5($data['description'] . '|' . $data['location']);
+        
+        // Parse location to extract province/city information
+        $locationData = $this->parseLocation($data['location']);
         
         return [
             'external_id' => $externalId,
             'external_source' => 'sumbongsapangulo',
             'project_name' => $data['description'],
             'description' => $data['description'],
-            'project_type' => 'Flood Control',
-            'location' => $data['location'],
+            'project_type' => $data['type_of_work'] ?? 'Flood Control',
+            'province_name' => $locationData['province_name'] ?? null,
+            'region_name' => $data['region'] ?? $locationData['region_name'] ?? null,
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
             'contractor_name' => $data['contractor'],
             'cost' => $data['cost'],
             'contract_completion_date' => $data['completion_date'],
+            'actual_date_started' => $data['start_date'] ?? null,
             'status' => $this->determineStatus($data['completion_date']),
             'data_source' => 'sumbongsapangulo',
             'last_synced_at' => now(),
             'metadata' => [
                 'source' => 'sumbongsapangulo_flood_control',
                 'project_category' => 'Flood Control',
+                'contract_id' => $data['contract_id'] ?? null,
+                'funding_year' => $data['year'] ?? null,
+                'type_of_work' => $data['type_of_work'] ?? null,
                 'original_data' => $data,
             ],
         ];

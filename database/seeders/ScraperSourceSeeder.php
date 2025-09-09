@@ -17,8 +17,8 @@ class ScraperSourceSeeder extends Seeder
             ['code' => 'manual'],
             [
             'name' => 'Manual Entry',
-            'base_url' => null,
-            'endpoint_pattern' => null,
+            'base_url' => '',
+            'endpoint_pattern' => '',
             'is_active' => false,
             'rate_limit' => 0,
             'timeout' => 0,

@@ -24,6 +24,7 @@ class DimeScraperStrategy extends BaseScraperStrategy
         $program = $this->processProgram($project['program'] ?? null);
         
         return [
+            'external_id' => $project['id'] ?? null,
             'external_source' => 'dime',
             'project_name' => $this->cleanText($project['projectName'] ?? ''),
             'project_code' => $project['projectCode'] ?? null,
@@ -98,7 +99,7 @@ class DimeScraperStrategy extends BaseScraperStrategy
      */
     public function getUniqueField(): string
     {
-        return 'uuid';
+        return 'external_id';
     }
 
     /**

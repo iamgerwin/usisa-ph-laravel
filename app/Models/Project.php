@@ -16,7 +16,8 @@ class Project extends Model
     use HasFactory, SoftDeletes, HasUuid;
 
     protected $fillable = [
-        'dime_id',
+        'external_id',
+        'external_source',
         'project_name',
         'project_code',
         'description',
@@ -60,7 +61,6 @@ class Project extends Model
     ];
 
     protected $casts = [
-        'dime_id' => 'integer',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'cost' => 'decimal:2',
@@ -119,6 +119,11 @@ class Project extends Model
     public function barangay(): BelongsTo
     {
         return $this->belongsTo(Barangay::class);
+    }
+
+    public function scraperSource(): BelongsTo
+    {
+        return $this->belongsTo(ScraperSource::class, 'external_source', 'code');
     }
 
     // Many-to-many relationships

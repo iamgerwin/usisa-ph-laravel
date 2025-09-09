@@ -103,5 +103,39 @@ class ScraperSourceSeeder extends Seeder
         ]);
 
         $this->command->info('Sumbong Sa Pangulo scraper source created successfully.');
+
+        ScraperSource::updateOrCreate(
+            ['code' => 'sumbong_flood_control'],
+            [
+            'name' => 'SumbongSaPangulo Flood Control Projects',
+            'base_url' => 'https://sumbongsapangulo.ph',
+            'endpoint_pattern' => '/flood-control-projects',
+            'is_active' => true,
+            'rate_limit' => 5,
+            'timeout' => 30,
+            'retry_attempts' => 3,
+            'headers' => [
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,application/json,*/*;q=0.8',
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+            ],
+            'field_mapping' => [
+                'project_description' => 'project_name',
+                'location' => 'location',
+                'contractor' => 'contractor_name',
+                'cost' => 'cost',
+                'completion_date' => 'contract_completion_date',
+            ],
+            'metadata' => [
+                'rate_limit_delay' => 120,
+                'batch_size' => 20,
+                'project_type' => 'Flood Control',
+                'requires_browser' => true,
+                'cloudflare_protected' => true,
+            ],
+            'scraper_class' => 'App\\Services\\Scrapers\\SumbongFloodControlScraperStrategy',
+            'version' => '1.0.0',
+        ]);
+
+        $this->command->info('Sumbong Flood Control scraper source created successfully.');
     }
 }

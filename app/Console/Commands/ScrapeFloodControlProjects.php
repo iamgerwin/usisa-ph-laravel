@@ -136,7 +136,7 @@ class ScrapeFloodControlProjects extends Command
             try {
                 $model = \App\Models\Project::updateOrCreate(
                     [
-                        'external_id' => $projectData['external_id'],
+                        'uuid' => $projectData['uuid'] ?? \Str::uuid(),
                         'external_source' => 'sumbongsapangulo',
                     ],
                     $projectData
@@ -164,7 +164,6 @@ class ScrapeFloodControlProjects extends Command
     {
         return [
             [
-                'external_id' => md5('flood-1'),
                 'external_source' => 'sumbongsapangulo',
                 'project_name' => 'Construction of Flood Mitigation Structure along Agusan River (Dankias Section) Package 1, Butuan City',
                 'description' => 'Construction of Flood Mitigation Structure along Agusan River (Dankias Section) Package 1, Butuan City',
@@ -181,7 +180,6 @@ class ScrapeFloodControlProjects extends Command
                 'last_synced_at' => now(),
             ],
             [
-                'external_id' => md5('flood-2'),
                 'external_source' => 'sumbongsapangulo',
                 'project_name' => 'Construction of Bank Protection, Lower Agusan River, Barangay Golden Ribbon, Butuan City',
                 'description' => 'Construction of Bank Protection, Lower Agusan River, Barangay Golden Ribbon, Butuan City',
@@ -198,7 +196,6 @@ class ScrapeFloodControlProjects extends Command
                 'last_synced_at' => now(),
             ],
             [
-                'external_id' => md5('flood-3'),
                 'external_source' => 'sumbongsapangulo',
                 'project_name' => 'Construction of Flood Mitigation Structure along Orani River, Orani, Bataan',
                 'description' => 'Construction of Flood Mitigation Structure along Orani River, Orani, Bataan',
@@ -215,7 +212,6 @@ class ScrapeFloodControlProjects extends Command
                 'last_synced_at' => now(),
             ],
             [
-                'external_id' => md5('flood-4'),
                 'external_source' => 'sumbongsapangulo',
                 'project_name' => 'Construction of Flood Control Dike along Kabacan River Sta. 48 + 620 - Sta. 48 + 944 L/S, Barangay Doles, Magpet, Cotabato',
                 'description' => 'Construction of Flood Control Dike along Kabacan River Sta. 48 + 620 - Sta. 48 + 944 L/S, Barangay Doles, Magpet, Cotabato',
@@ -233,7 +229,6 @@ class ScrapeFloodControlProjects extends Command
                 'last_synced_at' => now(),
             ],
             [
-                'external_id' => md5('flood-5'),
                 'external_source' => 'sumbongsapangulo',
                 'project_name' => 'Construction of Drainage Structure, Barangay Sacsac, Consolacion, Cebu',
                 'description' => 'Construction of Drainage Structure, Barangay Sacsac, Consolacion, Cebu',
@@ -250,7 +245,6 @@ class ScrapeFloodControlProjects extends Command
                 'last_synced_at' => now(),
             ],
             [
-                'external_id' => md5('flood-6'),
                 'external_source' => 'sumbongsapangulo',
                 'project_name' => 'Construction of River Control Structure, Bucayao River, Managpi Section, Calapan City, Oriental Mindoro',
                 'description' => 'Construction of River Control Structure, Bucayao River, Managpi Section, Calapan City, Oriental Mindoro',
@@ -267,7 +261,6 @@ class ScrapeFloodControlProjects extends Command
                 'last_synced_at' => now(),
             ],
             [
-                'external_id' => md5('flood-7'),
                 'external_source' => 'sumbongsapangulo',
                 'project_name' => 'Construction of Drainage System, Mag-Asawang Tubig RIS, Naujan, Oriental Mindoro',
                 'description' => 'Construction of Drainage System, Mag-Asawang Tubig RIS, Naujan, Oriental Mindoro',

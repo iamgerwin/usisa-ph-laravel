@@ -24,7 +24,6 @@ class SumbongSaPanguloScraperStrategy extends BaseScraperStrategy
         $program = $this->processProgram($project['Program'] ?? $project['program'] ?? null);
         
         return [
-            'external_id' => $project['Id'] ?? $project['id'] ?? null,
             'external_source' => 'sumbongsapangulo',
             'project_name' => $this->cleanText($project['ProjectName'] ?? $project['projectName'] ?? ''),
             'project_code' => $project['ProjectCode'] ?? $project['projectCode'] ?? null,
@@ -104,7 +103,7 @@ class SumbongSaPanguloScraperStrategy extends BaseScraperStrategy
      */
     public function getUniqueField(): string
     {
-        return 'external_id';
+        return 'uuid';
     }
 
     /**

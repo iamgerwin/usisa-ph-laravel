@@ -279,14 +279,10 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
      */
     private function mapToProjectData(array $data): array
     {
-        // Generate a unique ID - use project_id if available, otherwise create from description
-        $externalId = $data['project_id'] ?? md5($data['description'] . '|' . $data['location']);
-        
         // Parse location to extract province/city information
         $locationData = $this->parseLocation($data['location']);
         
         return [
-            'external_id' => $externalId,
             'external_source' => 'sumbongsapangulo',
             'project_name' => $data['description'],
             'description' => $data['description'],
@@ -319,7 +315,6 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
     public function processData(array $rawData): array
     {
         return [
-            'external_id' => $rawData['id'] ?? md5(json_encode($rawData)),
             'external_source' => 'sumbongsapangulo',
             'project_name' => $rawData['project_description'] ?? $rawData['description'] ?? $rawData['title'] ?? '',
             'description' => $rawData['project_description'] ?? $rawData['description'] ?? '',
@@ -468,6 +463,6 @@ class SumbongFloodControlScraperStrategy extends BaseScraperStrategy
      */
     public function getUniqueField(): string
     {
-        return 'external_id';
+        return 'uuid';
     }
 }

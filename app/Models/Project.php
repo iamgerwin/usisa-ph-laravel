@@ -16,7 +16,6 @@ class Project extends Model
     use HasFactory, SoftDeletes, HasUuid;
 
     protected $fillable = [
-        'external_id',
         'external_source',
         'project_name',
         'project_code',

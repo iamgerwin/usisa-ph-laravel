@@ -1,61 +1,209 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# USISA-PH: Philippine Government Projects Tracker
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> **Usisa** (oo-SEE-sah) - Filipino word meaning "to inquire" or "to investigate"
 
-## About Laravel
+A community-driven, open-source platform for tracking and monitoring Philippine government projects with radical transparency and accountability.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Mission
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+To boldly code where no taxpayer has gone before — showcasing full stack sorcery while delivering a clear, no-fluff, crowd-powered tracker of government projects. Because let's face it, if we're paying taxes, we deserve a seat at the table (or at least a public dashboard) showing where every peso went. No spin, no political mumbo jumbo, just cold, hard facts and a little bit of developer humor to keep things sane. Together, we turn noise into knowledge, and confusion into community-powered clarity — proving that transparency is not just a buzzword, but a tech superhero's code.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Vision
 
-## Learning Laravel
+To build a thriving digital citizen watchdog fueled by curiosity and caffeine, where Filipino families can finally see their taxes at work in health, food, flood control, education, and yes, rooting out corruption — all in real time. A future where government projects aren't just buried in a pile of papers but live in a public, trustable repository — updated by everyday heroes (contributors) committed to truth and justice, armed with fact-checking superpowers. It's transparency with teeth, where data drives action, and the Philippines finally shakes off the deep debt blues with community courage and code.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Key Features
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Real-time Project Tracking**: Monitor government projects across various sectors
+- **Multi-source Data Integration**: Aggregates data from DIME and other official sources
+- **Community Fact-Checking**: Crowd-sourced verification and validation system
+- **Sector-based Filtering**: Focus on health, education, flood control, food security, and anti-corruption
+- **Historical Analysis**: Track project timelines, budget changes, and completion rates
+- **Public API**: Open access to all project data for developers and researchers
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## How We Achieve Transparency
 
-## Laravel Sponsors
+### 1. Community Contributions with Fact-Check Workflow
+- Every data entry or update goes through pull requests
+- Requires at least two independent fact-checkers to approve changes
+- Public changelog documents all corrections and updates
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 2. Open Data Scraping with Source Transparency
+- All data sources are clearly documented
+- Raw scraped data published alongside processed data for auditing
+- Automated scrapers for DIME and other government portals
 
-### Premium Partners
+### 3. Reputation and Accountability System
+- Contributor badges based on reliability and accuracy
+- Dispute resolution process mediated by senior contributors
+- Track record of all contributor actions
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 4. Automation for Data Validation
+- Automated scripts cross-verify data with official records
+- Regular consistency checks and anomaly detection
+- Alert system for suspicious data changes
+
+### 5. No Political Agenda Enforcement
+- Strict ban on political endorsements and biased edits
+- Facts-only policy with required source citations
+- Swift moderation of potentially biased content
+
+### 6. User-Friendly Transparency Dashboard
+- Visual progress indicators for all projects
+- Sector-specific views and filters
+- Budget allocation and utilization tracking
+
+## Tech Stack
+
+- **Backend**: Laravel 11 (PHP)
+- **Database**: MySQL/PostgreSQL
+- **Frontend**: Blade Templates / Livewire
+- **Data Sources**: DIME, Government APIs, Public Records
+- **Scraping**: Custom scrapers with source attribution
+- **Caching**: Redis
+- **Queue**: Laravel Queue for background processing
+
+## Getting Started
+
+### Prerequisites
+
+- PHP 8.2 or higher
+- Composer
+- MySQL 8.0+ or PostgreSQL 13+
+- Node.js 18+ and NPM
+- Git
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/iamgerwin/usisa-ph-laravel.git
+cd usisa-ph-laravel
+```
+
+2. Install PHP dependencies
+```bash
+composer install
+```
+
+3. Install NPM dependencies
+```bash
+npm install
+```
+
+4. Copy environment file and configure
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+5. Configure your database in `.env` file
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=usisa_ph
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+6. Run database migrations
+```bash
+php artisan migrate
+```
+
+7. Seed initial data (if available)
+```bash
+php artisan db:seed
+```
+
+8. Build frontend assets
+```bash
+npm run build
+```
+
+9. Start the development server
+```bash
+php artisan serve
+```
+
+Visit `http://localhost:8000` to see the application.
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+We welcome contributions from developers, data analysts, fact-checkers, and concerned citizens! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
 
-## Code of Conduct
+### How to Contribute
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes with clear, descriptive messages
+4. Push to your branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request with detailed description
+6. Wait for review from at least two maintainers
 
-## Security Vulnerabilities
+### Contribution Guidelines
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Data Accuracy**: All data must be verifiable with official sources
+- **Code Quality**: Follow PSR-12 coding standards for PHP
+- **Testing**: Include tests for new features
+- **Documentation**: Update documentation for any API changes
+- **Fact-Checking**: Provide sources for all data entries
+- **No Political Bias**: Keep contributions neutral and fact-based
+
+## Data Sources
+
+Current data sources include:
+- **DIME (Data in Motion Explorer)**: Primary source for government project data
+- **DBM (Department of Budget and Management)**: Budget allocation data
+- **DPWH**: Infrastructure project updates
+- **DepEd**: Education project information
+- **DOH**: Health program tracking
+
+All scraped data includes source attribution and timestamp.
+
+## API Documentation
+
+Our API provides programmatic access to all project data:
+
+```
+GET /api/projects - List all projects
+GET /api/projects/{id} - Get specific project details
+GET /api/sectors - List all sectors
+GET /api/sectors/{sector}/projects - Get projects by sector
+GET /api/sources - List all data sources
+```
+
+Full API documentation available at `/api/documentation` when running locally.
+
+## Security and Privacy
+
+- No personal data collection beyond public official information
+- All contributions are public and transparent
+- Regular security audits and dependency updates
+- Responsible disclosure policy for vulnerabilities
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT License](LICENSE).
+
+## Support
+
+For questions, suggestions, or issues:
+- Open an issue on GitHub
+- Join our community Discord server
+- Email: support@usisa-ph.org (coming soon)
+
+## Acknowledgments
+
+- Filipino taxpayers who deserve transparency
+- Open-source community for amazing tools
+- Contributors who volunteer their time for truth
+- Government agencies providing public data
+- Coffee shops with good WiFi and stronger coffee
+
+---
+
+**Remember**: This is more than code — it's a movement for transparency, accountability, and citizen empowerment. Every line of code, every fact-check, every contribution brings us closer to a Philippines where public funds truly serve the public good.
+
+**Mabuhay ang Transparency! Long Live Open Data!**

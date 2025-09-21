@@ -26,7 +26,15 @@ class ContractorResource extends Resource
 {
     protected static ?string $model = Contractor::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static ?string $navigationLabel = 'Contractors';
+
+    protected static ?string $pluralModelLabel = 'Contractors';
 
     public static function form(Schema $schema): Schema
     {

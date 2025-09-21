@@ -24,7 +24,15 @@ class ImplementingOfficeResource extends Resource
 {
     protected static ?string $model = ImplementingOffice::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-library';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Administration';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'Implementing Offices';
+
+    protected static ?string $pluralModelLabel = 'Implementing Offices';
 
     public static function form(Schema $schema): Schema
     {

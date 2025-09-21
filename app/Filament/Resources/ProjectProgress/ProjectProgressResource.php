@@ -24,7 +24,15 @@ class ProjectProgressResource extends Resource
 {
     protected static ?string $model = ProjectProgress::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'Project Progress';
+
+    protected static ?string $pluralModelLabel = 'Project Progress Updates';
 
     public static function form(Schema $schema): Schema
     {

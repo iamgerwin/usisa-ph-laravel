@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('scraper_sources', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->index()->comment('Primary public identifier');
             $table->id();
             $table->string('code', 50)->unique()->comment('Unique identifier for the scraper source');
             $table->string('name')->comment('Human-readable name of the source');

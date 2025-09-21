@@ -25,8 +25,7 @@ class ScrapeDataCommand extends Command
                             {--retry=3 : Number of retry attempts for failed requests}
                             {--resume : Resume from last failed/paused job}
                             {--job= : Specific job ID to resume}
-                            {--dry-run : Run without saving to database}
-                            {--verbose : Show detailed output}';
+                            {--dry-run : Run without saving to database}';
 
     /**
      * The console command description.
@@ -39,7 +38,6 @@ class ScrapeDataCommand extends Command
     protected ScraperJob $job;
     protected $strategy;
     protected bool $dryRun = false;
-    protected bool $verbose = false;
     protected int $delay = 1;
     protected int $chunkSize = 100;
 
@@ -49,7 +47,6 @@ class ScrapeDataCommand extends Command
     public function handle()
     {
         $this->dryRun = $this->option('dry-run');
-        $this->verbose = $this->option('verbose');
         $this->delay = (int) $this->option('delay');
         $this->chunkSize = (int) $this->option('chunk');
 
@@ -153,8 +150,17 @@ class ScrapeDataCommand extends Command
             throw new \Exception('Start ID must be less than or equal to End ID');
         }
         
+        // Implement job locking - prevent concurrent jobs for same source and overlapping ID ranges
+        $this->checkForConflictingJobs($startId, $endId);
+        
         if ($this->source->hasRunningJob()) {
-            if (!$this->confirm('Source has a running job. Continue anyway?')) {
+            $runningJobs = $this->source->runningJobs()->get();
+            $this->error('Source has running job(s):');
+            foreach ($runningJobs as $job) {
+                $this->warn("  - Job #{$job->id}: Range {$job->start_id}-{$job->end_id}, Current: {$job->current_id}");
+            }
+            
+            if (!$this->confirm('This may cause duplicate data. Are you sure you want to continue?')) {
                 throw new \Exception('Aborted due to existing running job');
             }
         }
@@ -190,7 +196,7 @@ class ScrapeDataCommand extends Command
             $batchEnd = min($currentId + $this->chunkSize - 1, $endId);
             $ids = range($currentId, $batchEnd);
             
-            if ($this->verbose) {
+            if ($this->output->isVerbose()) {
                 $this->line("\nProcessing batch: {$currentId} to {$batchEnd}");
             }
             
@@ -207,7 +213,7 @@ class ScrapeDataCommand extends Command
                     $this->job->incrementError();
                     $this->job->logError($data['source_id'] ?? 0, $e->getMessage());
                     
-                    if ($this->verbose) {
+                    if ($this->output->isVerbose()) {
                         $this->error("\nError saving data: {$e->getMessage()}");
                     }
                 }
@@ -222,6 +228,22 @@ class ScrapeDataCommand extends Command
             
             if (!$this->dryRun) {
                 $this->job->updateProgress($currentId);
+                
+                // Save progress to database every 10 batches to ensure resumability
+                static $batchCounter = 0;
+                $batchCounter++;
+                if ($batchCounter % 10 === 0) {
+                    $this->job->save();
+                    
+                    // Also check if process has been running too long (over 2 hours)
+                    $runtime = $this->job->started_at ? now()->diffInMinutes($this->job->started_at) : 0;
+                    if ($runtime > 120) {
+                        $this->warn("\nAuto-pausing after 2 hours of runtime for safety...");
+                        $this->job->markAsPaused();
+                        $this->info("Resume with: php artisan scrape:data --resume --source={$this->source->code}");
+                        break;
+                    }
+                }
             }
             
             $progressBar->advance(count($ids));
@@ -233,6 +255,7 @@ class ScrapeDataCommand extends Command
             if ($this->shouldStop()) {
                 $this->warn("\nStopping scraper...");
                 $this->job->markAsPaused();
+                $this->info("Resume with: php artisan scrape:data --resume --source={$this->source->code}");
                 break;
             }
         }
@@ -254,37 +277,80 @@ class ScrapeDataCommand extends Command
                 throw new \Exception("Unique field {$uniqueField} not found in data");
             }
             
-            $conditions = [
-                $uniqueField => $uniqueValue,
-            ];
+            // Always update last_synced_at to track when we last fetched this record
+            $data['last_synced_at'] = now();
             
-            // For DIME scraper, also check by project_code as secondary unique
-            if ($uniqueField === 'dime_id' && isset($data['project_code'])) {
-                $existing = $modelClass::where($uniqueField, $uniqueValue)
-                    ->orWhere('project_code', $data['project_code'])
-                    ->first();
-            } else {
-                $existing = $modelClass::where($conditions)->first();
-            }
-            
-            if ($existing) {
-                // Update dime_id if it was matched by project_code
-                if ($uniqueField === 'dime_id' && !$existing->dime_id) {
+            // For DIME scraper, handle multiple unique constraints
+            if ($uniqueField === 'dime_id') {
+                // Use lockForUpdate to prevent race conditions
+                $query = $modelClass::query()->lockForUpdate();
+                
+                // Check by dime_id first
+                $query->where($uniqueField, $uniqueValue);
+                
+                // Also check by project_code if available
+                if (isset($data['project_code']) && $data['project_code']) {
+                    $query->orWhere('project_code', $data['project_code']);
+                }
+                
+                $existing = $query->first();
+                
+                if ($existing) {
+                    // Ensure we keep the dime_id even if matched by project_code
                     $data['dime_id'] = $uniqueValue;
-                }
-                
-                $existing->update($data);
-                $this->job->incrementUpdate();
-                
-                if ($this->verbose) {
-                    $this->info("Updated: {$uniqueField} = {$uniqueValue}");
+                    
+                    // Compare timestamps to ensure we're updating with newer data
+                    $existingSyncTime = $existing->last_synced_at;
+                    $shouldUpdate = true;
+                    
+                    // If the existing record was synced very recently (within 1 hour), skip update
+                    if ($existingSyncTime && $existingSyncTime->diffInHours(now()) < 1) {
+                        $shouldUpdate = false;
+                        $this->job->incrementSkip();
+                        
+                        if ($this->output->isVerbose()) {
+                            $this->info("Skipped (recently synced): {$uniqueField} = {$uniqueValue}");
+                        }
+                    }
+                    
+                    if ($shouldUpdate) {
+                        $existing->update($data);
+                        $this->job->incrementUpdate();
+                        
+                        if ($this->output->isVerbose()) {
+                            $this->info("Updated: {$uniqueField} = {$uniqueValue}");
+                        }
+                    }
+                } else {
+                    // New record
+                    $modelClass::create($data);
+                    $this->job->incrementCreate();
+                    
+                    if ($this->output->isVerbose()) {
+                        $this->info("Created: {$uniqueField} = {$uniqueValue}");
+                    }
                 }
             } else {
-                $modelClass::create($data);
-                $this->job->incrementCreate();
+                // Generic unique field handling for other scrapers
+                // Generic unique field handling for other scrapers with lock
+                $existing = $modelClass::where($uniqueField, $uniqueValue)
+                    ->lockForUpdate()
+                    ->first();
                 
-                if ($this->verbose) {
-                    $this->info("Created: {$uniqueField} = {$uniqueValue}");
+                if ($existing) {
+                    $existing->update($data);
+                    $this->job->incrementUpdate();
+                    
+                    if ($this->output->isVerbose()) {
+                        $this->info("Updated: {$uniqueField} = {$uniqueValue}");
+                    }
+                } else {
+                    $modelClass::create($data);
+                    $this->job->incrementCreate();
+                    
+                    if ($this->output->isVerbose()) {
+                        $this->info("Created: {$uniqueField} = {$uniqueValue}");
+                    }
                 }
             }
         });
@@ -300,6 +366,44 @@ class ScrapeDataCommand extends Command
         return false;
     }
 
+    /**
+     * Check for conflicting jobs that might cause duplicate data
+     */
+    protected function checkForConflictingJobs(int $startId, int $endId): void
+    {
+        // Check for any jobs (running, paused, or pending) with overlapping ID ranges
+        $conflictingJobs = ScraperJob::where('source_id', $this->source->id)
+            ->whereIn('status', [ScraperJobStatus::RUNNING, ScraperJobStatus::PENDING, ScraperJobStatus::PAUSED])
+            ->where(function ($query) use ($startId, $endId) {
+                // Check for overlapping ranges
+                $query->where(function ($q) use ($startId, $endId) {
+                    // New range starts within existing range
+                    $q->where('start_id', '<=', $startId)
+                      ->where('end_id', '>=', $startId);
+                })->orWhere(function ($q) use ($startId, $endId) {
+                    // New range ends within existing range
+                    $q->where('start_id', '<=', $endId)
+                      ->where('end_id', '>=', $endId);
+                })->orWhere(function ($q) use ($startId, $endId) {
+                    // New range completely contains existing range
+                    $q->where('start_id', '>=', $startId)
+                      ->where('end_id', '<=', $endId);
+                });
+            })
+            ->get();
+        
+        if ($conflictingJobs->isNotEmpty()) {
+            $this->error('Found conflicting jobs with overlapping ID ranges:');
+            foreach ($conflictingJobs as $job) {
+                $this->warn("  - Job #{$job->id} ({$job->status->value}): Range {$job->start_id}-{$job->end_id}, Current: {$job->current_id}");
+            }
+            
+            if (!$this->confirm('Overlapping ranges may cause duplicate data. Continue anyway?')) {
+                throw new \Exception('Aborted due to conflicting job ranges');
+            }
+        }
+    }
+    
     protected function displaySummary(): void
     {
         $this->info("\n" . str_repeat('=', 50));
@@ -320,7 +424,7 @@ class ScrapeDataCommand extends Command
             ]
         );
         
-        if ($this->job->error_count > 0 && $this->verbose) {
+        if ($this->job->error_count > 0 && $this->output->isVerbose()) {
             $this->warn("\nErrors encountered:");
             $errors = array_slice($this->job->errors ?? [], -10);
             foreach ($errors as $error) {

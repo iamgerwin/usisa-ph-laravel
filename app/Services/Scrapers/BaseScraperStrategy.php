@@ -54,10 +54,16 @@ abstract class BaseScraperStrategy implements ScraperStrategy
         
         for ($attempt = 1; $attempt <= $this->retryAttempts; $attempt++) {
             try {
-                $response = $this->httpClient->get($url);
+                // Add connection timeout handling
+                $response = $this->httpClient->get($url, [
+                    'connect_timeout' => 10,
+                    'timeout' => $this->source->timeout ?? 30,
+                    'http_errors' => false,
+                ]);
                 
                 if ($response->getStatusCode() === 200) {
-                    $rawData = json_decode($response->getBody()->getContents(), true);
+                    $content = $response->getBody()->getContents();
+                    $rawData = $this->extractData($content);
                     
                     if ($rawData && $this->validateData($rawData)) {
                         return $this->processData($rawData);
@@ -76,17 +82,40 @@ abstract class BaseScraperStrategy implements ScraperStrategy
                     return null;
                 }
                 
+                // Handle 5xx server errors with retry
+                if ($response->getStatusCode() >= 500) {
+                    $this->logError($id, "Server error {$response->getStatusCode()}: {$response->getReasonPhrase()}");
+                    if ($attempt < $this->retryAttempts) {
+                        usleep($this->retryDelay * 1000 * $attempt * 2); // Double delay for server errors
+                        continue;
+                    }
+                    return null;
+                }
+                
                 $this->logError($id, "HTTP {$response->getStatusCode()}: {$response->getReasonPhrase()}");
                 
             } catch (RequestException $e) {
-                $this->logError($id, "Request failed: {$e->getMessage()}");
+                // Handle connection timeouts and network issues
+                if ($e->hasResponse()) {
+                    $statusCode = $e->getResponse()->getStatusCode();
+                    $this->logError($id, "Request failed with status {$statusCode}: {$e->getMessage()}");
+                } else {
+                    $this->logError($id, "Connection error: {$e->getMessage()}");
+                }
                 
                 if ($attempt < $this->retryAttempts) {
-                    usleep($this->retryDelay * 1000 * $attempt);
+                    $delay = $this->retryDelay * 1000 * pow(2, $attempt - 1); // Exponential backoff
+                    usleep($delay);
                     continue;
                 }
             } catch (\Exception $e) {
                 $this->logError($id, "Unexpected error: {$e->getMessage()}");
+                
+                // For unexpected errors, still try to retry
+                if ($attempt < $this->retryAttempts) {
+                    usleep($this->retryDelay * 1000 * $attempt);
+                    continue;
+                }
                 return null;
             }
         }
@@ -159,6 +188,22 @@ abstract class BaseScraperStrategy implements ScraperStrategy
         }
         
         return $mapped;
+    }
+
+    /**
+     * Extract data from response content
+     * Can be overridden by specific strategies
+     */
+    protected function extractData(string $content): ?array
+    {
+        // Try to parse as JSON first
+        $json = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $json;
+        }
+        
+        // If not JSON, return null (strategies can override this)
+        return null;
     }
 
     public function getErrors(): array

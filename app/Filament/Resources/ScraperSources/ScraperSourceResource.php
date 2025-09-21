@@ -20,7 +20,15 @@ class ScraperSourceResource extends Resource
 {
     protected static ?string $model = ScraperSource::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'System';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'Scraper Sources';
+
+    protected static ?string $pluralModelLabel = 'Scraper Sources';
 
     public static function form(Schema $schema): Schema
     {

@@ -5,6 +5,7 @@ namespace App\Services\Scrapers;
 use App\Enums\ProjectStatus;
 use App\Models\Project;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class DimeScraperStrategy extends BaseScraperStrategy
 {
@@ -23,7 +24,8 @@ class DimeScraperStrategy extends BaseScraperStrategy
         $program = $this->processProgram($project['program'] ?? null);
         
         return [
-            'dime_id' => $project['id'] ?? null,
+            'external_id' => $project['id'] ?? null,
+            'external_source' => 'dime',
             'project_name' => $this->cleanText($project['projectName'] ?? ''),
             'project_code' => $project['projectCode'] ?? null,
             'description' => $this->cleanText($project['description'] ?? ''),
@@ -45,7 +47,7 @@ class DimeScraperStrategy extends BaseScraperStrategy
             'status' => $project['status'] ?? null,
             'publication_status' => $project['publicationStatus'] ?? 'Published',
             'cost' => $this->parseAmount($project['cost'] ?? 0),
-            'utilized_amount' => $this->parseAmount($project['utilizedAmount'] ?? 0),
+            'utilized_amount' => $this->parseAmount($project['utilizedAmount'] ?? null) ?? 0,
             'date_started' => $this->parseDate($project['dateStarted'] ?? null),
             'actual_date_started' => $this->parseDate($project['actualDateStarted'] ?? null),
             'contract_completion_date' => $this->parseDate($project['contractCompletionDate'] ?? null),
@@ -97,7 +99,7 @@ class DimeScraperStrategy extends BaseScraperStrategy
      */
     public function getUniqueField(): string
     {
-        return 'dime_id';
+        return 'external_id';
     }
 
     /**
@@ -331,16 +333,26 @@ class DimeScraperStrategy extends BaseScraperStrategy
     }
 
     /**
-     * Process program data
+     * Process program data and create if needed
      */
     protected function processProgram(?array $program): ?array
     {
-        if (!$program) {
+        if (!$program || !isset($program['programName'])) {
             return null;
         }
         
+        // Create or find the program
+        $programModel = \App\Models\Program::firstOrCreate(
+            ['name' => $program['programName']],
+            [
+                'abbreviation' => $program['nameAbbreviation'] ?? null,
+                'description' => $program['programDescription'] ?? null,
+            ]
+        );
+        
         return [
-            'id' => $program['id'] ?? null,
+            'id' => $programModel->id,
+            'dime_id' => $program['id'] ?? null,
             'name' => $program['programName'] ?? null,
             'abbreviation' => $program['nameAbbreviation'] ?? null,
             'description' => $program['programDescription'] ?? null,
@@ -362,5 +374,29 @@ class DimeScraperStrategy extends BaseScraperStrategy
         $metadata = array_merge($metadata, $additionalData);
         
         return $metadata;
+    }
+
+    /**
+     * Extract JSON data from Next.js HTML response
+     */
+    protected function extractData(string $content): ?array
+    {
+        // First try as pure JSON
+        $json = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $json;
+        }
+        
+        // Extract Next.js __NEXT_DATA__ script tag
+        if (preg_match('/<script\s+id="__NEXT_DATA__"\s+type="application\/json">(.+?)<\/script>/s', $content, $matches)) {
+            $jsonData = json_decode($matches[1], true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                Log::info('DIME scraper extracted data from Next.js HTML');
+                return $jsonData['props'] ?? $jsonData;
+            }
+        }
+        
+        Log::warning('DIME scraper could not extract data from response');
+        return null;
     }
 }

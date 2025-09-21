@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class City extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuid;
 
     protected $fillable = [
         'province_id',
@@ -18,14 +19,28 @@ class City extends Model
         'name',
         'type',
         'zip_code',
+        'island_group_code',
+        'old_name',
+        'district_code',
         'sort_order',
         'is_active',
+        'psa_slug',
+        'psa_code',
+        'psa_name',
+        'city_class',
+        'income_class',
+        'is_capital',
+        'psa_data',
+        'psa_synced_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
         'province_id' => 'integer',
+        'is_capital' => 'boolean',
+        'psa_data' => 'array',
+        'psa_synced_at' => 'datetime',
     ];
 
     // Relationships
@@ -68,6 +83,12 @@ class City extends Model
     public function scopeMunicipalities($query)
     {
         return $query->where('type', 'municipality');
+    }
+
+    // Route model binding
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 
     // Accessors

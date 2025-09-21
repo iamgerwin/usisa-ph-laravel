@@ -18,7 +18,15 @@ class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'Projects';
+
+    protected static ?string $pluralModelLabel = 'Projects';
 
     public static function form(Schema $schema): Schema
     {

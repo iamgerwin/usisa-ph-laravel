@@ -16,35 +16,85 @@ class DimeScraperStrategy extends BaseScraperStrategy
     {
         // Handle nested structure from Next.js response
         $project = $rawData['pageProps']['project'] ?? $rawData;
-        
+
         // Process implementing offices, contractors, and source of funds
         $implementingOffices = $this->processImplementingOffices($project['implementingOffices'] ?? []);
         $contractors = $this->processContractors($project['contractors'] ?? []);
         $sourceOfFunds = $this->processSourceOfFunds($project['sourceOfFunds'] ?? []);
         $program = $this->processProgram($project['program'] ?? null);
-        
+
+        // Ensure project name is never null - use fallback values
+        $projectName = $this->cleanText($project['projectName'] ?? '');
+        if (empty($projectName)) {
+            // Try alternative fields or generate from code
+            $projectName = $project['title'] ??
+                          $project['name'] ??
+                          $project['projectCode'] ??
+                          'DIME Project ' . ($project['id'] ?? uniqid());
+        }
+
+        // Store any unknown fields in metadata
+        $knownFields = [
+            'id', 'projectName', 'projectCode', 'description', 'projectImageUrl',
+            'streetAddress', 'city', 'cityCode', 'barangay', 'barangayCode',
+            'province', 'provinceCode', 'region', 'regionCode', 'zipCode',
+            'country', 'state', 'latitude', 'longitude', 'status', 'publicationStatus',
+            'cost', 'utilizedAmount', 'dateStarted', 'actualDateStarted',
+            'contractCompletionDate', 'actualContractCompletionDate', 'asOfDate',
+            'lastUpdatedProjectCost', 'updatesCount', 'implementingOffices',
+            'contractors', 'sourceOfFunds', 'program', 'resources', 'progresses',
+            'createdAt', 'updatedAt', 'pageProps', 'title', 'name'
+        ];
+
+        $unknownFields = [];
+        foreach ($project as $key => $value) {
+            if (!in_array($key, $knownFields)) {
+                $unknownFields[$key] = $value;
+            }
+        }
+
+        $metadata = $this->buildMetadata($project, [
+            'implementing_offices' => $implementingOffices,
+            'contractors' => $contractors,
+            'source_of_funds' => $sourceOfFunds,
+            'program' => $program,
+            'resources' => $project['resources'] ?? [],
+            'progresses' => $project['progresses'] ?? [],
+            'dime_created_at' => $project['createdAt'] ?? null,
+            'dime_updated_at' => $project['updatedAt'] ?? null,
+        ]);
+
+        // Add unknown fields to metadata for future analysis
+        if (!empty($unknownFields)) {
+            $metadata['unknown_fields'] = $unknownFields;
+            Log::info('DIME scraper found unknown fields', [
+                'project_id' => $project['id'] ?? 'unknown',
+                'fields' => array_keys($unknownFields)
+            ]);
+        }
+
         return [
             'external_id' => $project['id'] ?? null,
             'external_source' => 'dime',
-            'project_name' => $this->cleanText($project['projectName'] ?? ''),
+            'project_name' => $projectName,
             'project_code' => $project['projectCode'] ?? null,
             'description' => $this->cleanText($project['description'] ?? ''),
-            'project_image_url' => $project['projectImageUrl'] ?? null,
-            'street_address' => $project['streetAddress'] ?? null,
-            'city_name' => $project['city'] ?? null,
+            'project_image_url' => $this->validateUrl($project['projectImageUrl'] ?? null),
+            'street_address' => $this->cleanText($project['streetAddress'] ?? null),
+            'city_name' => $this->cleanText($project['city'] ?? null),
             'city_code' => $project['cityCode'] ?? null,
             'zip_code' => $project['zipCode'] ?? null,
-            'barangay_name' => $project['barangay'] ?? null,
+            'barangay_name' => $this->cleanText($project['barangay'] ?? null),
             'barangay_code' => $project['barangayCode'] ?? null,
-            'province_name' => $project['province'] ?? null,
+            'province_name' => $this->cleanText($project['province'] ?? null),
             'province_code' => $project['provinceCode'] ?? null,
-            'region_name' => $project['region'] ?? null,
+            'region_name' => $this->cleanText($project['region'] ?? null),
             'region_code' => $project['regionCode'] ?? null,
             'country' => $project['country'] ?? 'Philippines',
             'state' => $project['state'] ?? null,
             'latitude' => $this->parseCoordinate($project['latitude'] ?? null),
             'longitude' => $this->parseCoordinate($project['longitude'] ?? null),
-            'status' => $project['status'] ?? null,
+            'status' => $this->sanitizeStatus($project['status'] ?? null),
             'publication_status' => $project['publicationStatus'] ?? 'Published',
             'cost' => $this->parseAmount($project['cost'] ?? 0),
             'utilized_amount' => $this->parseAmount($project['utilizedAmount'] ?? null) ?? 0,
@@ -54,20 +104,11 @@ class DimeScraperStrategy extends BaseScraperStrategy
             'actual_contract_completion_date' => $this->parseDate($project['actualContractCompletionDate'] ?? null),
             'as_of_date' => $this->parseDate($project['asOfDate'] ?? null),
             'last_updated_project_cost' => $this->parseDate($project['lastUpdatedProjectCost'] ?? null),
-            'updates_count' => $project['updatesCount'] ?? 0,
+            'updates_count' => $this->parseInt($project['updatesCount'] ?? 0),
             'program_id' => $program['id'] ?? null,
             'data_source' => 'dime',
             'last_synced_at' => now(),
-            'metadata' => $this->buildMetadata($project, [
-                'implementing_offices' => $implementingOffices,
-                'contractors' => $contractors,
-                'source_of_funds' => $sourceOfFunds,
-                'program' => $program,
-                'resources' => $project['resources'] ?? [],
-                'progresses' => $project['progresses'] ?? [],
-                'dime_created_at' => $project['createdAt'] ?? null,
-                'dime_updated_at' => $project['updatedAt'] ?? null,
-            ]),
+            'metadata' => $metadata,
         ];
     }
 
@@ -386,7 +427,7 @@ class DimeScraperStrategy extends BaseScraperStrategy
         if (json_last_error() === JSON_ERROR_NONE) {
             return $json;
         }
-        
+
         // Extract Next.js __NEXT_DATA__ script tag
         if (preg_match('/<script\s+id="__NEXT_DATA__"\s+type="application\/json">(.+?)<\/script>/s', $content, $matches)) {
             $jsonData = json_decode($matches[1], true);
@@ -395,8 +436,72 @@ class DimeScraperStrategy extends BaseScraperStrategy
                 return $jsonData['props'] ?? $jsonData;
             }
         }
-        
+
         Log::warning('DIME scraper could not extract data from response');
         return null;
+    }
+
+    /**
+     * Validate URL format
+     */
+    protected function validateUrl(?string $url): ?string
+    {
+        if (!$url) {
+            return null;
+        }
+
+        // Check if it's a valid URL
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+
+        // Try to fix common issues
+        if (strpos($url, 'http') !== 0) {
+            // Add protocol if missing
+            $url = 'https://' . $url;
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                return $url;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sanitize status values
+     */
+    protected function sanitizeStatus(?string $status): ?string
+    {
+        if (!$status) {
+            return null;
+        }
+
+        // Clean and normalize status
+        $status = trim($status);
+
+        // Map common variations
+        $statusMap = [
+            'ongoing' => 'Ongoing',
+            'in_progress' => 'Ongoing',
+            'in progress' => 'Ongoing',
+            'active' => 'Ongoing',
+            'completed' => 'Completed',
+            'finished' => 'Completed',
+            'done' => 'Completed',
+            'pending' => 'Pending',
+            'planned' => 'Pending',
+            'suspended' => 'Suspended',
+            'on_hold' => 'Suspended',
+            'on hold' => 'Suspended',
+            'cancelled' => 'Cancelled',
+            'terminated' => 'Cancelled',
+            'for_bidding' => 'For Bidding',
+            'for bidding' => 'For Bidding',
+            'under_procurement' => 'Under Procurement',
+            'under procurement' => 'Under Procurement',
+        ];
+
+        $normalized = strtolower($status);
+        return $statusMap[$normalized] ?? $status;
     }
 }

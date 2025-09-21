@@ -6,6 +6,7 @@ use App\Filament\Resources\Provinces\Pages\CreateProvince;
 use App\Filament\Resources\Provinces\Pages\EditProvince;
 use App\Filament\Resources\Provinces\Pages\ListProvinces;
 use App\Filament\Resources\Provinces\Tables\ProvincesTable;
+use App\Filament\Resources\Provinces\RelationManagers\CitiesRelationManager;
 use App\Models\Province;
 use BackedEnum;
 use Filament\Forms\Components\Select;
@@ -23,7 +24,15 @@ class ProvinceResource extends Resource
 {
     protected static ?string $model = Province::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Geography';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'Provinces';
+
+    protected static ?string $pluralModelLabel = 'Provinces';
 
     public static function form(Schema $schema): Schema
     {
@@ -96,7 +105,7 @@ class ProvinceResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            CitiesRelationManager::class,
         ];
     }
 
@@ -107,5 +116,10 @@ class ProvinceResource extends Resource
             'create' => CreateProvince::route('/create'),
             'edit' => EditProvince::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRecordRouteKeyName(): ?string
+    {
+        return 'uuid';
     }
 }

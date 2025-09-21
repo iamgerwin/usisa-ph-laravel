@@ -25,7 +25,15 @@ class SourceOfFundResource extends Resource
 {
     protected static ?string $model = SourceOfFund::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static ?string $navigationLabel = 'Source of Funds';
+
+    protected static ?string $pluralModelLabel = 'Source of Funds';
 
     public static function form(Schema $schema): Schema
     {

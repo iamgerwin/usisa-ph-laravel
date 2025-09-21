@@ -24,7 +24,15 @@ class ProgramResource extends Resource
 {
     protected static ?string $model = Program::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-folder';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static ?string $navigationLabel = 'Programs';
+
+    protected static ?string $pluralModelLabel = 'Programs';
 
     public static function form(Schema $schema): Schema
     {

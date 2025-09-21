@@ -6,6 +6,7 @@ use App\Filament\Resources\Cities\Pages\CreateCity;
 use App\Filament\Resources\Cities\Pages\EditCity;
 use App\Filament\Resources\Cities\Pages\ListCities;
 use App\Filament\Resources\Cities\Tables\CitiesTable;
+use App\Filament\Resources\Cities\RelationManagers\BarangaysRelationManager;
 use App\Models\City;
 use BackedEnum;
 use Filament\Forms\Components\Select;
@@ -23,7 +24,15 @@ class CityResource extends Resource
 {
     protected static ?string $model = City::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Geography';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static ?string $navigationLabel = 'Cities/Municipalities';
+
+    protected static ?string $pluralModelLabel = 'Cities/Municipalities';
 
     public static function form(Schema $schema): Schema
     {
@@ -106,7 +115,7 @@ class CityResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            BarangaysRelationManager::class,
         ];
     }
 
@@ -117,5 +126,10 @@ class CityResource extends Resource
             'create' => CreateCity::route('/create'),
             'edit' => EditCity::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRecordRouteKeyName(): ?string
+    {
+        return 'uuid';
     }
 }

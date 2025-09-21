@@ -81,7 +81,6 @@ class ImplementingOfficesTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('name')
-            ->searchable(['name', 'name_abbreviation', 'email', 'phone']);
+            ->defaultSort('name');
     }
 }

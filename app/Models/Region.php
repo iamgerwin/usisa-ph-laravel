@@ -16,14 +16,24 @@ class Region extends Model
     protected $fillable = [
         'code',
         'name',
+        'region_name',
         'abbreviation',
+        'island_group_code',
+        'old_name',
         'sort_order',
         'is_active',
+        'psa_slug',
+        'psa_code',
+        'psa_name',
+        'psa_data',
+        'psa_synced_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'psa_data' => 'array',
+        'psa_synced_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -52,6 +62,12 @@ class Region extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // Route model binding
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 
     public function scopeOrdered($query)

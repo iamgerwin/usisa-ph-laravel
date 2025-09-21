@@ -164,7 +164,6 @@ class ScraperJobsTable
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
-            ->searchable(['triggered_by', 'notes'])
             ->poll('10s');
     }
 }

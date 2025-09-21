@@ -75,7 +75,6 @@ class BarangaysTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('sort_order')
-            ->searchable(['name', 'code']);
+            ->defaultSort('sort_order');
     }
 }

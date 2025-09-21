@@ -17,14 +17,26 @@ class Barangay extends Model
         'city_id',
         'code',
         'name',
+        'island_group_code',
+        'old_name',
+        'district_code',
+        'sub_municipality_code',
         'sort_order',
         'is_active',
+        'psa_slug',
+        'psa_code',
+        'psa_name',
+        'urban_rural',
+        'psa_data',
+        'psa_synced_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
         'city_id' => 'integer',
+        'psa_data' => 'array',
+        'psa_synced_at' => 'datetime',
     ];
 
     // Relationships
@@ -42,6 +54,12 @@ class Barangay extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // Route model binding
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 
     public function scopeOrdered($query)

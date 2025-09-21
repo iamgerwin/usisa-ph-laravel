@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Provinces\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -82,6 +83,11 @@ class ProvincesTable
                     ->falseLabel('Inactive'),
             ])
             ->actions([
+                Action::make('view')
+                    ->label('View')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn ($record) => "/admin/provinces/{$record->uuid}/edit")
+                    ->color('info'),
                 EditAction::make(),
             ])
             ->bulkActions([
@@ -89,7 +95,6 @@ class ProvincesTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('sort_order')
-            ->searchable(['name', 'code', 'abbreviation']);
+            ->defaultSort('sort_order');
     }
 }

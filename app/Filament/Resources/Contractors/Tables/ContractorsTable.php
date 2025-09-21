@@ -101,7 +101,6 @@ class ContractorsTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('name')
-            ->searchable(['name', 'name_abbreviation', 'email', 'phone', 'license_number']);
+            ->defaultSort('name');
     }
 }

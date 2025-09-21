@@ -25,7 +25,15 @@ class ScraperJobResource extends Resource
 {
     protected static ?string $model = ScraperJob::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'System';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'Scraper Jobs';
+
+    protected static ?string $pluralModelLabel = 'Scraper Jobs';
 
     public static function form(Schema $schema): Schema
     {

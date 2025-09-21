@@ -17,6 +17,10 @@ class Barangay extends Model
         'city_id',
         'code',
         'name',
+        'island_group_code',
+        'old_name',
+        'district_code',
+        'sub_municipality_code',
         'sort_order',
         'is_active',
         'psa_slug',
@@ -50,6 +54,12 @@ class Barangay extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // Route model binding
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 
     public function scopeOrdered($query)

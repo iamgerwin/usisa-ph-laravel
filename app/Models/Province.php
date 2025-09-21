@@ -18,6 +18,9 @@ class Province extends Model
         'code',
         'name',
         'abbreviation',
+        'island_group_code',
+        'old_name',
+        'district_code',
         'sort_order',
         'is_active',
         'psa_slug',
@@ -56,6 +59,12 @@ class Province extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // Route model binding
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 
     public function scopeOrdered($query)

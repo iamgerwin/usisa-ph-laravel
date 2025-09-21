@@ -6,6 +6,7 @@ use App\Filament\Resources\Regions\Pages\CreateRegion;
 use App\Filament\Resources\Regions\Pages\EditRegion;
 use App\Filament\Resources\Regions\Pages\ListRegions;
 use App\Filament\Resources\Regions\Tables\RegionsTable;
+use App\Filament\Resources\Regions\RelationManagers\ProvincesRelationManager;
 use App\Models\Region;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
@@ -22,7 +23,15 @@ class RegionResource extends Resource
 {
     protected static ?string $model = Region::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-globe-americas';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Geography';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'Regions';
+
+    protected static ?string $pluralModelLabel = 'Regions';
 
     public static function form(Schema $schema): Schema
     {
@@ -84,7 +93,7 @@ class RegionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ProvincesRelationManager::class,
         ];
     }
 
@@ -95,5 +104,10 @@ class RegionResource extends Resource
             'create' => CreateRegion::route('/create'),
             'edit' => EditRegion::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRecordRouteKeyName(): ?string
+    {
+        return 'uuid';
     }
 }

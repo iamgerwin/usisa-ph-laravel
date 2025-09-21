@@ -19,6 +19,9 @@ class City extends Model
         'name',
         'type',
         'zip_code',
+        'island_group_code',
+        'old_name',
+        'district_code',
         'sort_order',
         'is_active',
         'psa_slug',
@@ -80,6 +83,12 @@ class City extends Model
     public function scopeMunicipalities($query)
     {
         return $query->where('type', 'municipality');
+    }
+
+    // Route model binding
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 
     // Accessors

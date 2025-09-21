@@ -23,7 +23,15 @@ class BarangayResource extends Resource
 {
     protected static ?string $model = Barangay::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-home-modern';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Geography';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static ?string $navigationLabel = 'Barangays';
+
+    protected static ?string $pluralModelLabel = 'Barangays';
 
     public static function form(Schema $schema): Schema
     {
@@ -98,5 +106,10 @@ class BarangayResource extends Resource
             'create' => CreateBarangay::route('/create'),
             'edit' => EditBarangay::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRecordRouteKeyName(): ?string
+    {
+        return 'uuid';
     }
 }

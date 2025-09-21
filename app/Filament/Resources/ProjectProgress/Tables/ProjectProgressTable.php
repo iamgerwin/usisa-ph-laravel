@@ -115,7 +115,6 @@ class ProjectProgressTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('progress_date', 'desc')
-            ->searchable(['description', 'remarks', 'reported_by']);
+            ->defaultSort('progress_date', 'desc');
     }
 }

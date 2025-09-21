@@ -81,7 +81,6 @@ class ProgramsTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('name')
-            ->searchable(['name', 'name_abbreviation', 'slug', 'description']);
+            ->defaultSort('name');
     }
 }

@@ -114,7 +114,6 @@ class SourceOfFundsTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('name')
-            ->searchable(['name', 'name_abbreviation', 'type', 'fiscal_year', 'description']);
+            ->defaultSort('name');
     }
 }

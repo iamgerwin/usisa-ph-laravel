@@ -5,6 +5,7 @@ namespace App\Services\Scrapers\PSGC;
 use App\Models\Region;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class RegionScraper extends BasePSGCScraper
 {
@@ -74,6 +75,7 @@ class RegionScraper extends BasePSGCScraper
                 if ($region) {
                     // Update existing region
                     $region->update([
+                        'psa_slug' => Str::slug($item['name']),
                         'psa_code' => $item['psa_code'],
                         'psa_name' => $item['name'],
                         'abbreviation' => $item['abbreviation'] ?? $region->abbreviation,
@@ -86,6 +88,7 @@ class RegionScraper extends BasePSGCScraper
                     // Create new region
                     Region::create([
                         'code' => $item['psa_code'],
+                        'psa_slug' => Str::slug($item['name']),
                         'psa_code' => $item['psa_code'],
                         'name' => $item['name'],
                         'psa_name' => $item['name'],

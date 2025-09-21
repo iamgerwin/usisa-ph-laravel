@@ -19,6 +19,7 @@ class Barangay extends Model
         'name',
         'sort_order',
         'is_active',
+        'psa_slug',
         'psa_code',
         'psa_name',
         'urban_rural',

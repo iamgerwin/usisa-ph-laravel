@@ -20,6 +20,7 @@ class Province extends Model
         'abbreviation',
         'sort_order',
         'is_active',
+        'psa_slug',
         'psa_code',
         'psa_name',
         'income_class',

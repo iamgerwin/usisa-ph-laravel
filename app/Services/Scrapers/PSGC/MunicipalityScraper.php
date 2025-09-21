@@ -6,6 +6,7 @@ use App\Models\City;
 use App\Models\Province;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class MunicipalityScraper extends BasePSGCScraper
 {
@@ -91,6 +92,7 @@ class MunicipalityScraper extends BasePSGCScraper
                     ->first();
 
                 $municipalityData = [
+                    'psa_slug' => Str::slug($item['name']),
                     'psa_code' => $item['psa_code'],
                     'psa_name' => $item['name'],
                     'income_class' => $item['income_class'],

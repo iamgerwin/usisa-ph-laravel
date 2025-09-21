@@ -6,6 +6,7 @@ use App\Models\Province;
 use App\Models\Region;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ProvinceScraper extends BasePSGCScraper
 {
@@ -98,6 +99,7 @@ class ProvinceScraper extends BasePSGCScraper
                     ->first();
 
                 $provinceData = [
+                    'psa_slug' => Str::slug($item['name']),
                     'psa_code' => $item['psa_code'],
                     'psa_name' => $item['name'],
                     'income_class' => $item['income_class'],

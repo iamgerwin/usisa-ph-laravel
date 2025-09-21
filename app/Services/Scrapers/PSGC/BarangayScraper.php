@@ -7,6 +7,7 @@ use App\Models\City;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class BarangayScraper extends BasePSGCScraper
 {
@@ -105,6 +106,7 @@ class BarangayScraper extends BasePSGCScraper
                             ->first();
 
                         $barangayData = [
+                            'psa_slug' => Str::slug($item['name']),
                             'psa_code' => $item['psa_code'],
                             'psa_name' => $item['name'],
                             'urban_rural' => $item['urban_rural'],

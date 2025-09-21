@@ -140,6 +140,10 @@ class PSGCScraperOrchestrator
 
         return ScraperJob::create([
             'source_id' => $source->id,
+            'start_id' => 0,  // Web scraping doesn't use ID ranges
+            'end_id' => 0,    // Web scraping doesn't use ID ranges
+            'current_id' => 0,
+            'chunk_size' => 1000, // For batch processing
             'status' => ScraperJobStatus::PENDING,
             'triggered_by' => 'orchestrator',
             'notes' => "PSGC {$type} scraping job",

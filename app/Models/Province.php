@@ -20,12 +20,19 @@ class Province extends Model
         'abbreviation',
         'sort_order',
         'is_active',
+        'psa_code',
+        'psa_name',
+        'income_class',
+        'psa_data',
+        'psa_synced_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
         'region_id' => 'integer',
+        'psa_data' => 'array',
+        'psa_synced_at' => 'datetime',
     ];
 
     // Relationships

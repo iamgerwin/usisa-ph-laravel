@@ -19,11 +19,17 @@ class Region extends Model
         'abbreviation',
         'sort_order',
         'is_active',
+        'psa_code',
+        'psa_name',
+        'psa_data',
+        'psa_synced_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'psa_data' => 'array',
+        'psa_synced_at' => 'datetime',
     ];
 
     protected static function boot()

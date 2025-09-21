@@ -155,12 +155,60 @@ We welcome contributions from developers, data analysts, fact-checkers, and conc
 
 Current data sources include:
 - **DIME (Data in Motion Explorer)**: Primary source for government project data
+- **PSA PSGC**: Philippine Standard Geographic Code for locations hierarchy
 - **DBM (Department of Budget and Management)**: Budget allocation data
 - **DPWH**: Infrastructure project updates
 - **DepEd**: Education project information
 - **DOH**: Health program tracking
 
 All scraped data includes source attribution and timestamp.
+
+### PSGC Data Scraper
+
+The Philippine Standard Geographic Code (PSGC) scraper maintains up-to-date geographic hierarchy data from the Philippine Statistics Authority.
+
+#### Features
+- Automated scraping of regions, provinces, cities, municipalities, and barangays
+- Maintains proper hierarchical relationships using 10-digit PSGC codes
+- Tracks income classifications and urban/rural designations
+- Granular error handling with resumable scraping jobs
+- Source attribution and sync timestamp tracking
+
+#### Usage
+
+Check current PSGC data status:
+```bash
+php artisan psgc:status
+php artisan psgc:status --detailed  # Show scraper job statistics
+```
+
+Run PSGC scrapers:
+```bash
+# Scrape all geographic levels (in proper order)
+php artisan psgc:scrape
+
+# Scrape specific geographic level
+php artisan psgc:scrape regions
+php artisan psgc:scrape provinces
+php artisan psgc:scrape cities
+php artisan psgc:scrape municipalities
+php artisan psgc:scrape barangays
+
+# Run scraper in background queue
+php artisan psgc:scrape --queue
+
+# Force scraping even if another job is running
+php artisan psgc:scrape --force
+```
+
+#### Data Structure
+- **Regions**: Top-level geographic divisions with PSA codes
+- **Provinces**: Under regions, includes income classification
+- **Cities**: Independent or under provinces, includes city class and income classification
+- **Municipalities**: Under provinces, includes income classification
+- **Barangays**: Smallest unit under cities/municipalities, includes urban/rural classification
+
+The scraper maintains both original codes and PSA PSGC codes for backward compatibility while ensuring data integrity through the official PSGC system.
 
 ## API Documentation
 

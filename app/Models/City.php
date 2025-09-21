@@ -21,12 +21,22 @@ class City extends Model
         'zip_code',
         'sort_order',
         'is_active',
+        'psa_code',
+        'psa_name',
+        'city_class',
+        'income_class',
+        'is_capital',
+        'psa_data',
+        'psa_synced_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
         'province_id' => 'integer',
+        'is_capital' => 'boolean',
+        'psa_data' => 'array',
+        'psa_synced_at' => 'datetime',
     ];
 
     // Relationships
